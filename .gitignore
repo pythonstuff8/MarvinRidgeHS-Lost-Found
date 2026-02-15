@@ -1,3 +1,6 @@
 .claude/
 .gemini/
 .backend-llama/
+backend/.env.example
+frontend/.env.local
+fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json
