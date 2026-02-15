@@ -4,19 +4,21 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, db
 import os
-import httpx
+from groq import Groq
 import cloudinary
 import cloudinary.uploader
-import uuid
 import base64
+import uuid
 
 # Import AI config
 from ai_config import (
-    AI_ENABLED, OLLAMA_BASE_URL, TEXT_MODEL, VISION_MODEL,
-    CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+    AI_ENABLED, GROQ_API_KEY, VISION_MODEL, SEARCH_MODEL,
+    CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET,
+    OPENAI_API_KEY, OPENAI_VISION_MODEL
 )
+from openai import OpenAI
 
-app = FastAPI(title="Marvin Ridge Lost & Found API (Ollama Local Edition)")
+app = FastAPI(title="Marvin Ridge Lost & Found API")
 
 # CORS
 app.add_middleware(
@@ -49,7 +51,7 @@ else:
         "../fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json",
         "fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json"
     ]
-
+    
     cred_path = next((p for p in cred_paths if os.path.exists(p)), None)
 
     if cred_path:
@@ -62,6 +64,12 @@ else:
     else:
         print(f"Warning: Firebase credentials not found. Checked: {cred_paths}")
 
+# Initialize Groq client
+groq_client = Groq(api_key=GROQ_API_KEY) if AI_ENABLED else None
+
+# Initialize OpenAI client for image moderation
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if AI_ENABLED and OPENAI_API_KEY else None
+
 # Initialize Cloudinary
 cloudinary.config(
     cloud_name=CLOUDINARY_CLOUD_NAME,
@@ -69,61 +77,6 @@ cloudinary.config(
     api_secret=CLOUDINARY_API_SECRET,
     secure=True
 )
-
-
-# --- Ollama Helper Functions ---
-async def ollama_chat(model: str, messages: list, temperature: float = 0.7) -> str:
-    """Send a chat request to Ollama"""
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        response = await client.post(
-            f"{OLLAMA_BASE_URL}/api/chat",
-            json={
-                "model": model,
-                "messages": messages,
-                "stream": False,
-                "options": {
-                    "temperature": temperature
-                }
-            }
-        )
-        response.raise_for_status()
-        return response.json()["message"]["content"]
-
-
-async def ollama_vision(model: str, prompt: str, image_url: str) -> str:
-    """Send a vision request to Ollama with an image"""
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        # Download the image and convert to base64
-        img_response = await client.get(image_url)
-        img_response.raise_for_status()
-        image_base64 = base64.b64encode(img_response.content).decode('utf-8')
-
-        response = await client.post(
-            f"{OLLAMA_BASE_URL}/api/chat",
-            json={
-                "model": model,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                        "images": [image_base64]
-                    }
-                ],
-                "stream": False
-            }
-        )
-        response.raise_for_status()
-        return response.json()["message"]["content"]
-
-
-async def check_ollama_available() -> bool:
-    """Check if Ollama is running"""
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(f"{OLLAMA_BASE_URL}/api/tags")
-            return response.status_code == 200
-    except:
-        return False
 
 
 # --- Models ---
@@ -152,26 +105,14 @@ class ImageModerationRequest(BaseModel):
 # --- Endpoints ---
 
 @app.get("/api/health")
-async def health_check():
-    ollama_status = await check_ollama_available()
-    return {
-        "status": "healthy",
-        "ai_enabled": AI_ENABLED,
-        "ollama_available": ollama_status,
-        "service": "Marvin Ridge Lost & Found Backend (Ollama Local Edition)",
-        "text_model": TEXT_MODEL,
-        "vision_model": VISION_MODEL
-    }
+def health_check():
+    return {"status": "healthy", "ai_enabled": AI_ENABLED, "service": "Marvin Ridge Lost & Found Backend"}
 
 
 @app.get("/api/ai-status")
-async def ai_status():
+def ai_status():
     """Check if AI features are enabled"""
-    ollama_status = await check_ollama_available()
-    return {
-        "ai_enabled": AI_ENABLED and ollama_status,
-        "ollama_running": ollama_status
-    }
+    return {"ai_enabled": AI_ENABLED}
 
 
 @app.post("/api/upload-image")
@@ -181,23 +122,23 @@ async def upload_image(request: ImageUploadRequest):
     """
     try:
         image_data = request.image_base64
-
+        
         # Remove data URI prefix if present
         if "," in image_data:
             image_data = image_data.split(",")[1]
-
+        
         # Generate unique public_id
         public_id = f"lostfound/{uuid.uuid4().hex[:12]}"
-
+        
         # Upload to Cloudinary
         result = cloudinary.uploader.upload(
             f"data:image/jpeg;base64,{image_data}",
             public_id=public_id,
             folder="marvin_ridge_lf"
         )
-
+        
         return {"url": result["secure_url"], "public_id": result["public_id"]}
-
+    
     except Exception as e:
         print(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload image")
@@ -207,19 +148,17 @@ async def upload_image(request: ImageUploadRequest):
 async def moderate_content(request: ModerationRequest):
     """
     AI Safeguard: Check if submitted content is appropriate for a school lost & found
-    Uses Llama 3.2 3B running locally via Ollama
     """
-    if not AI_ENABLED:
+    if not AI_ENABLED or not groq_client:
         return {"approved": True, "reason": "AI moderation disabled"}
 
-    if not await check_ollama_available():
-        return {"approved": True, "reason": "Ollama not running - moderation skipped"}
-
     try:
-        messages = [
-            {
-                "role": "system",
-                "content": """You are a content moderator for a high school lost and found website.
+        completion = groq_client.chat.completions.create(
+            model=SEARCH_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a content moderator for a high school lost and found website.
 You must check if submissions are appropriate. REJECT content that contains:
 - Profanity, slurs, or offensive language
 - Inappropriate or adult content
@@ -231,19 +170,22 @@ You must check if submissions are appropriate. REJECT content that contains:
 Respond ONLY with:
 APPROVED: true or false
 REASON: brief explanation (one sentence)"""
-            },
-            {
-                "role": "user",
-                "content": f"Check this submission:\nTitle: {request.title}\nCategory: {request.category}\nDescription: {request.description}"
-            }
-        ]
+                },
+                {
+                    "role": "user",
+                    "content": f"Check this submission:\nTitle: {request.title}\nCategory: {request.category}\nDescription: {request.description}"
+                }
+            ],
+            temperature=0.1,
+            max_completion_tokens=100
+        )
 
-        output = await ollama_chat(TEXT_MODEL, messages, temperature=0.1)
-
+        output = completion.choices[0].message.content
+        
         # Parse response
         approved = True
         reason = "Content approved"
-
+        
         for line in output.split('\n'):
             if 'APPROVED:' in line.upper():
                 approved = 'true' in line.lower()
@@ -262,17 +204,19 @@ REASON: brief explanation (one sentence)"""
 async def moderate_image(request: ImageModerationRequest):
     """
     AI Safeguard: Check if uploaded image is appropriate for a school lost & found
-    Uses Llama 3.2 11B Vision running locally via Ollama
+    Uses OpenAI GPT-4 Vision for image content moderation
     """
-    if not AI_ENABLED:
+    if not AI_ENABLED or not openai_client:
         return {"approved": True, "reason": "Image moderation disabled"}
 
-    if not await check_ollama_available():
-        return {"approved": True, "reason": "Ollama not running - moderation skipped"}
-
     try:
-        prompt = """You are an image content moderator for a high school lost and found website.
-Check if this image is appropriate for a school environment. REJECT images that contain:
+        completion = openai_client.chat.completions.create(
+            model=OPENAI_VISION_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are an image content moderator for a high school lost and found website.
+You must check if uploaded images are appropriate for a school environment. REJECT images that contain:
 - Nudity or sexually suggestive content
 - Violence, gore, or graphic content
 - Weapons, drugs, or drug paraphernalia
@@ -288,8 +232,27 @@ APPROVE images that show:
 Respond ONLY with:
 APPROVED: true or false
 REASON: brief explanation (one sentence)"""
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Check if this image is appropriate for a high school lost and found website:"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": request.image_url
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=100
+        )
 
-        output = await ollama_vision(VISION_MODEL, prompt, request.image_url)
+        output = completion.choices[0].message.content
 
         # Parse response
         approved = True
@@ -312,15 +275,15 @@ REASON: brief explanation (one sentence)"""
 @app.post("/api/ai-search")
 async def ai_search(request: SearchRequest):
     """
-    AI-powered search using Llama 3.2 3B via Ollama
+    AI-powered search using Groq Llama 3.1 8B
     """
-    if not AI_ENABLED or not await check_ollama_available():
+    if not AI_ENABLED or not groq_client:
         return fallback_search(request.query)
 
     try:
         items_ref = db.reference('items')
         items_data = items_ref.get()
-
+        
         if not items_data:
             return {"results": [], "corrected_query": request.query}
 
@@ -341,27 +304,32 @@ async def ai_search(request: SearchRequest):
             return {"results": [], "corrected_query": request.query}
 
         items_context = "\n".join([
-            f"ID:{i['id']} | {i['title']} | {i['category']} | {i['location']}"
+            f"ID:{i['id']} | {i['title']} | {i['category']} | {i['location']}" 
             for i in items_list[:30]
         ])
 
-        messages = [
-            {
-                "role": "system",
-                "content": """You are a search assistant for a lost and found system.
+        completion = groq_client.chat.completions.create(
+            model=SEARCH_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a search assistant for a lost and found system.
 1. Correct any spelling errors in the user's search query.
 2. Match items from the list that are relevant.
 3. Return ONLY in this exact format:
 CORRECTED: [corrected search term]
 MATCHES: [comma-separated list of matching IDs, or "none" if no matches]"""
-            },
-            {
-                "role": "user",
-                "content": f"Items list:\n{items_context}\n\nUser search: \"{request.query}\""
-            }
-        ]
+                },
+                {
+                    "role": "user",
+                    "content": f"Items list:\n{items_context}\n\nUser search: \"{request.query}\""
+                }
+            ],
+            temperature=0.3,
+            max_completion_tokens=200
+        )
 
-        output = await ollama_chat(TEXT_MODEL, messages, temperature=0.3)
+        output = completion.choices[0].message.content
 
         corrected = request.query
         matching_ids = []
@@ -375,11 +343,11 @@ MATCHES: [comma-separated list of matching IDs, or "none" if no matches]"""
                     matching_ids = [id.strip() for id in ids_str.split(',') if id.strip()]
 
         results = [item for item in items_list if item['id'] in matching_ids]
-
+        
         if not results:
             search_lower = corrected.lower()
-            results = [item for item in items_list if
-                search_lower in item['title'].lower() or
+            results = [item for item in items_list if 
+                search_lower in item['title'].lower() or 
                 search_lower in item['description'].lower() or
                 search_lower in item['category'].lower()
             ]
@@ -397,14 +365,14 @@ def fallback_search(query: str):
         search_lower = query.lower()
         items_ref = db.reference('items')
         items_data = items_ref.get() or {}
-
+        
         results = []
         for item_id, item in items_data.items():
             if item.get('status') == 'APPROVED':
-                if (search_lower in item.get('title', '').lower() or
+                if (search_lower in item.get('title', '').lower() or 
                     search_lower in item.get('description', '').lower()):
                     results.append({"id": item_id, **item})
-
+        
         return {"results": results[:10], "corrected_query": query}
     except:
         return {"results": [], "corrected_query": query}
@@ -413,18 +381,36 @@ def fallback_search(query: str):
 @app.post("/api/describe-image")
 async def describe_image(request: DescribeRequest):
     """
-    Describe an image using Llama 3.2 11B Vision via Ollama
+    Describe an image using Groq Llama 4 Scout Vision model
     """
-    if not AI_ENABLED:
+    if not AI_ENABLED or not groq_client:
         return {"description": "AI features are disabled. Please describe the item manually."}
 
-    if not await check_ollama_available():
-        return {"description": "Ollama not running. Please describe the item manually."}
-
     try:
-        prompt = "Describe this item for a lost and found listing. Include: color, brand (if visible), condition, and identifying features. Keep it under 50 words."
+        completion = groq_client.chat.completions.create(
+            model=VISION_MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Describe this item for a lost and found listing. Include: color, brand (if visible), condition, and identifying features. Keep it under 50 words."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": request.image_url
+                            }
+                        }
+                    ]
+                }
+            ],
+            temperature=0.7,
+            max_completion_tokens=150
+        )
 
-        description = await ollama_vision(VISION_MODEL, prompt, request.image_url)
+        description = completion.choices[0].message.content
         return {"description": description.strip()}
 
     except Exception as e:

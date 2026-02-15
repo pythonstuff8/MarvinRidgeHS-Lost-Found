@@ -1,6 +1,37 @@
+# Dependencies
+node_modules/
+backend/venv/
+backend/__pycache__/
+backend/app/__pycache__/
+
+# Environment files
+.env
+.env.local
+frontend/.env.local
+backend/.env
+
+# Firebase credentials
+fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json
+
+# IDE / Editor
 .claude/
 .gemini/
-.backend-llama/
-backend/.env.example
-frontend/.env.local
-fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json
+.DS_Store
+
+# Misc
+backend-llama/
+CODEBASE_CONTEXT.md
+fblawebdev.pdf
+firebase_rules.json
+Lost_and_Found_Depth.docx
+Lost_and_Found_Summary.docx
+*.docx
+*.pdf
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# Python
+*.pyc
+__pycache__/
