@@ -1,17 +1,15 @@
 import os
 
 # AI Configuration Toggle
-# Set to True to enable AI features, False to disable
 AI_ENABLED = True
 
-# API Keys (set via environment variables)
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+# OpenAI Configuration
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
-# Models
-VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"  # For image description
-SEARCH_MODEL = "llama-3.1-8b-instant"  # For AI search
-OPENAI_VISION_MODEL = "gpt-4o-mini"  # For image moderation (cost-effective)
+# Models - All OpenAI
+TEXT_MODEL = "gpt-4.1-nano"          # Cheapest & fastest - text moderation, search
+VISION_MODEL = "gpt-4.1-mini"       # Best cost/perf for vision - image description
+IMAGE_MOD_MODEL = "gpt-4.1-nano"    # Cheapest with vision - image moderation (yes/no)
 
 # Cloudinary Configuration (set via environment variables)
 CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
