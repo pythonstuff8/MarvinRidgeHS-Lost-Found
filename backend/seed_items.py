@@ -32,280 +32,287 @@ if not firebase_admin._apps:
         'databaseURL': 'https://fblalf-default-rtdb.firebaseio.com/'
     })
 
+# Unsplash CDN base URL helper
+def img(photo_id):
+    return f"https://images.unsplash.com/{photo_id}?auto=format&fit=crop&w=800&q=80"
+
 ITEMS = [
-    # APPROVED FOUND items
+    # ===================== APPROVED FOUND items (10) =====================
     {
-        "title": "Blue Hydro Flask",
-        "description": "32 oz dark blue Hydro Flask with a dent near the bottom. Has a mountain sticker on the side.",
+        "title": "Blue Reusable Water Bottle",
+        "description": "Blue and white reusable water bottle, looks like a LARQ or similar brand. Found on a desk after class.",
         "category": "Personal Items",
         "type": "FOUND",
         "location": "Cafeteria",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1602143407151-01114192003b?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1611190346465-12f6b1ad0c06")
     },
     {
-        "title": "TI-84 Plus Calculator",
-        "description": "Texas Instruments TI-84 Plus CE graphing calculator. Silver edition with a cracked screen protector.",
+        "title": "Scientific Calculator",
+        "description": "Standard scientific calculator found on a desk with some loose paper. No name written on it.",
         "category": "Electronics",
         "type": "FOUND",
         "location": "Room G122",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1648201188793-418f2b9b4b32")
     },
     {
-        "title": "Red JanSport Backpack",
-        "description": "Classic red JanSport backpack with several keychains attached to the zipper. Contains notebooks and pencils.",
-        "category": "Personal Items",
-        "type": "FOUND",
-        "location": "Library",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "AirPods Pro Case",
-        "description": "White AirPods Pro charging case. No AirPods inside. Small scratch on the lid.",
-        "category": "Electronics",
-        "type": "FOUND",
-        "location": "Gym Bleachers",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1588156979435-379b9d802b0a?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "Black North Face Jacket",
-        "description": "Men's medium black North Face puffer jacket. Has a small tear on the left sleeve.",
-        "category": "Clothing",
-        "type": "FOUND",
-        "location": "Auditorium",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1544923246-77307dd270b5?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "Samsung Galaxy Buds",
-        "description": "Black Samsung Galaxy Buds case with buds inside. Case has a small chip on the corner.",
+        "title": "AirPods Pro with Case",
+        "description": "White Apple AirPods Pro in charging case. Found on a blue surface near the science wing.",
         "category": "Electronics",
         "type": "FOUND",
         "location": "Room E204",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1606841837239-c5a1a4a07af7")
     },
     {
-        "title": "Calculus Textbook",
-        "description": "AP Calculus BC textbook, 8th edition. Name written inside the front cover but partially erased.",
-        "category": "Books",
+        "title": "Blue School Backpack",
+        "description": "Blue backpack found next to a laptop and textbook. Has a front zipper pocket. No ID tags visible.",
+        "category": "Personal Items",
         "type": "FOUND",
-        "location": "Courtyard Bench",
+        "location": "Library",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1535982330050-f1c2fb79ff78")
     },
     {
-        "title": "Car Keys with Honda Fob",
-        "description": "Honda car key fob with two house keys and a small flashlight keychain attached.",
+        "title": "Black Wireless Headphones",
+        "description": "Over-ear black wireless headphones. Good condition, no visible brand name. Found on a bench.",
+        "category": "Electronics",
+        "type": "FOUND",
+        "location": "Gym Bleachers",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1567928513899-997d98489fbd")
+    },
+    {
+        "title": "Brown Leather Wallet",
+        "description": "Brown leather bifold wallet found on a table. Contains no cash but has a student ID inside (turned in to office).",
+        "category": "Personal Items",
+        "type": "FOUND",
+        "location": "Cafeteria",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1531190260877-c8d11eb5afaf")
+    },
+    {
+        "title": "Car Keys with Keychain",
+        "description": "Set of black and silver car keys found on a dark surface near the parking lot entrance.",
         "category": "Personal Items",
         "type": "FOUND",
         "location": "Parking Lot B",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1603508102977-02688e3265fd")
     },
     {
-        "title": "Prescription Glasses",
-        "description": "Black rectangular frame prescription glasses in a brown leather case.",
+        "title": "Black Frame Prescription Glasses",
+        "description": "Black rectangular prescription eyeglasses found on a white desk. No case included.",
         "category": "Personal Items",
         "type": "FOUND",
         "location": "Media Center",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1519419166318-4f5c601b8e6c")
     },
     {
-        "title": "Green Lunchbox",
-        "description": "Insulated green lunchbox with a zipper closure. Still has containers inside.",
-        "category": "Personal Items",
-        "type": "FOUND",
-        "location": "Cafeteria",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1604147706283-d7119b5b822c?auto=format&fit=crop&q=80&w=800"
-    },
-    # APPROVED LOST items
-    {
-        "title": "Silver MacBook Charger",
-        "description": "Apple 67W USB-C MacBook charger. Has a small piece of blue tape on the cable.",
+        "title": "Apple MacBook Charger",
+        "description": "White Apple USB-C charging adapter found on a table. No cable attached, just the brick.",
         "category": "Electronics",
-        "type": "LOST",
+        "type": "FOUND",
         "location": "Room F201",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1583863788434-e58a36330cf0")
     },
     {
-        "title": "Gray Nike Hoodie",
-        "description": "Nike Dri-FIT gray pullover hoodie, size medium. Has a small hole near the front pocket.",
-        "category": "Clothing",
-        "type": "LOST",
-        "location": "Weight Room",
+        "title": "Spiral Notebook with Notes",
+        "description": "Spiral-bound notebook with handwritten notes inside. Has a fountain pen clipped to the cover.",
+        "category": "Books",
+        "type": "FOUND",
+        "location": "Courtyard Bench",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1471107340929-a87cd0f5b5f3")
+    },
+
+    # ===================== APPROVED LOST items (8) =====================
+    {
+        "title": "iPhone with Blue Case",
+        "description": "Black iPhone XS in a blue protective case. Last seen near a succulent plant display in the main hall.",
+        "category": "Electronics",
+        "type": "LOST",
+        "location": "Main Hallway",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1547658718-f4311ad64746")
     },
     {
-        "title": "iPhone Charger Cable",
-        "description": "White Apple Lightning to USB-C cable, about 3 feet long. Slightly frayed at the Lightning end.",
+        "title": "White Lightning Charging Cable",
+        "description": "White Apple Lightning to USB cable, about 3 feet long. Left plugged into a wall outlet.",
         "category": "Electronics",
         "type": "LOST",
         "location": "Room E102",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1586953208270-767889db1422?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1587037542794-6ca5f4772330")
     },
     {
-        "title": "Blue Adidas Sweatpants",
-        "description": "Navy blue Adidas track pants with white stripes. Size large. Elastic ankles.",
+        "title": "Silver Analog Wristwatch",
+        "description": "Round silver analog watch with black leather strap. Has sentimental value. Lost during gym class.",
+        "category": "Personal Items",
+        "type": "LOST",
+        "location": "Weight Room",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1436076838903-fd4dd41d99c4")
+    },
+    {
+        "title": "White Nike Air Force 1",
+        "description": "Single white Nike Air Force 1 sneaker, right foot, size 10. Left behind after basketball practice.",
+        "category": "Clothing",
+        "type": "LOST",
+        "location": "Gym",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1618453292437-5379bfbbf94d")
+    },
+    {
+        "title": "Black Wireless Earbuds",
+        "description": "Black and gray wireless earbuds in a small charging case. Sony or similar brand. Fell out of my pocket.",
+        "category": "Electronics",
+        "type": "LOST",
+        "location": "Auditorium",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1598900863662-da1c3e6dd9d9")
+    },
+    {
+        "title": "Denim Jacket",
+        "description": "Blue washed denim jacket, women's size small. Was hanging on the back of a door or chair.",
+        "category": "Clothing",
+        "type": "LOST",
+        "location": "Art Room",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1543076447-215ad9ba6923")
+    },
+    {
+        "title": "Stack of Textbooks",
+        "description": "3-4 assorted textbooks left on a wooden table. Subjects include history and English lit.",
+        "category": "Books",
+        "type": "LOST",
+        "location": "Library",
+        "status": "APPROVED",
+        "imageUrl": img("photo-1516979187457-637abb4f9353")
+    },
+    {
+        "title": "Gray Nike Running Shoe",
+        "description": "Single unpaired gray Nike running shoe, left foot. Was in my gym bag which got mixed up.",
         "category": "Clothing",
         "type": "LOST",
         "location": "Boys Locker Room",
         "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1491553895911-0055eca6402d")
     },
-    {
-        "title": "USB Flash Drive",
-        "description": "32GB SanDisk Cruzer USB drive. Red and black color. Has class project files on it.",
-        "category": "Electronics",
-        "type": "LOST",
-        "location": "Computer Lab",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1618410320928-25228d811631?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "Maroon Scarf",
-        "description": "Knitted maroon and gray striped scarf. About 5 feet long.",
-        "category": "Clothing",
-        "type": "LOST",
-        "location": "Front Office",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "Spiral Notebook",
-        "description": "Five Star 5-subject spiral notebook, black cover. Has chemistry and English notes inside.",
-        "category": "Books",
-        "type": "LOST",
-        "location": "Room F105",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-        "title": "Wireless Mouse",
-        "description": "Logitech M185 wireless mouse, gray. USB receiver may still be plugged into a school computer.",
-        "category": "Electronics",
-        "type": "LOST",
-        "location": "Media Center",
-        "status": "APPROVED",
-        "imageUrl": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800"
-    },
-    # PENDING items (awaiting admin review)
+
+    # ===================== PENDING items (8) =====================
     {
         "title": "Black Umbrella",
-        "description": "Large black automatic umbrella with wooden handle. Found leaning against the wall.",
+        "description": "Large black automatic umbrella found leaning against the wall near the main entrance after rain.",
         "category": "Personal Items",
         "type": "FOUND",
         "location": "Main Entrance",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1534309466160-70b22cc6254d?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1560523666-da919cd231af")
     },
     {
-        "title": "Beats Headphones",
-        "description": "Red Beats Solo3 wireless headphones. Right ear cushion is slightly worn.",
+        "title": "White Nike Air Force 1 Low",
+        "description": "White Nike Air Force 1 Low sneaker photographed against dark background. Found in hallway.",
+        "category": "Clothing",
+        "type": "FOUND",
+        "location": "Hallway B",
+        "status": "PENDING",
+        "imageUrl": img("photo-1608231387042-66d1773070a5")
+    },
+    {
+        "title": "Small Black Earbuds",
+        "description": "Pair of small black wireless earbuds found on a white table in the testing center.",
         "category": "Electronics",
         "type": "FOUND",
-        "location": "Band Room",
+        "location": "Testing Center",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1632200004922-bc18602c79fc")
     },
     {
-        "title": "Spanish Textbook",
-        "description": "Realidades 2 Spanish textbook. Name written inside cover but mostly faded.",
-        "category": "Books",
+        "title": "Brown Wallet",
+        "description": "Brown leather bifold wallet found on the concrete floor near the vending machines.",
+        "category": "Personal Items",
         "type": "FOUND",
-        "location": "Room E301",
+        "location": "Vending Area",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1614260937560-c749cc17da94")
     },
     {
-        "title": "White Nike Air Forces",
-        "description": "Pair of white Nike Air Force 1 shoes, size 10. Left shoe has a grass stain on the toe.",
+        "title": "Pair of White Nike Sneakers",
+        "description": "Pair of white Nike Air Force 1 sneakers, size 9. Found in a plastic bag near the track.",
         "category": "Clothing",
         "type": "FOUND",
         "location": "Track Field",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1558079498-d41c80254734")
     },
     {
-        "title": "Graphing Calculator",
-        "description": "TI-Nspire CX II calculator. Has name label on the back that is peeling off.",
+        "title": "TI-84 Graphing Calculator",
+        "description": "TI-84 or similar graphing calculator. Has a name label on the back that is peeling off.",
         "category": "Electronics",
         "type": "LOST",
         "location": "Room G118",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1648201188793-418f2b9b4b32")
     },
     {
-        "title": "Denim Jacket",
-        "description": "Levi's denim jacket, women's size small. Has a pin on the left lapel.",
+        "title": "Gray Pullover Hoodie",
+        "description": "Gray pullover hoodie seen on someone near the courtyard. Nike or similar brand, size medium.",
         "category": "Clothing",
         "type": "LOST",
-        "location": "Art Room",
+        "location": "Courtyard",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1576211473184-a3a1da6216b7")
     },
     {
-        "title": "Water Bottle (Nalgene)",
-        "description": "32 oz clear purple Nalgene water bottle with various travel stickers.",
+        "title": "Water Bottle (Purple Nalgene)",
+        "description": "32 oz clear purple Nalgene water bottle with various travel stickers. Left in the cafeteria.",
         "category": "Personal Items",
         "type": "LOST",
         "location": "Cafeteria",
         "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1523362628745-0c100fc988a1?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1611190346465-12f6b1ad0c06")
     },
-    {
-        "title": "Pencil Case",
-        "description": "Blue canvas pencil case with zipper. Contains pens, pencils, highlighters, and an eraser.",
-        "category": "Personal Items",
-        "type": "FOUND",
-        "location": "Room F201",
-        "status": "PENDING",
-        "imageUrl": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&q=80&w=800"
-    },
-    # REJECTED items
-    {
-        "title": "Old Textbook",
-        "description": "Torn and heavily damaged textbook. Unclear which class it belongs to.",
-        "category": "Books",
-        "type": "FOUND",
-        "location": "Dumpster Area",
-        "status": "REJECTED",
-        "imageUrl": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=800"
-    },
+
+    # ===================== REJECTED items (4) =====================
     {
         "title": "Broken Earbuds",
-        "description": "Wired earbuds with a broken left earbud. Brand unknown.",
+        "description": "Wired earbuds with a broken left earbud. Brand unknown. Too damaged to return.",
         "category": "Electronics",
         "type": "FOUND",
         "location": "Hallway B",
         "status": "REJECTED",
-        "imageUrl": "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1632200004922-bc18602c79fc")
     },
     {
-        "title": "Single Glove",
-        "description": "One black winter glove, right hand. No brand visible.",
+        "title": "Old Damaged Textbook",
+        "description": "Torn and heavily water-damaged textbook. Pages are stuck together. Unclear which class it belongs to.",
+        "category": "Books",
+        "type": "FOUND",
+        "location": "Dumpster Area",
+        "status": "REJECTED",
+        "imageUrl": img("photo-1516979187457-637abb4f9353")
+    },
+    {
+        "title": "Single Worn Glove",
+        "description": "One black winter glove, right hand. Heavily worn with holes. No brand visible.",
         "category": "Clothing",
         "type": "FOUND",
         "location": "Bus Loop",
         "status": "REJECTED",
-        "imageUrl": "https://images.unsplash.com/photo-1545170241-e8af0ecdc4c0?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": ""
     },
     {
-        "title": "Cracked Phone Case",
-        "description": "Clear iPhone case, heavily cracked. No phone inside.",
+        "title": "Cracked Phone Case (Empty)",
+        "description": "Clear iPhone case, heavily cracked and yellowed. No phone inside. Not worth claiming.",
         "category": "Electronics",
         "type": "FOUND",
         "location": "Parking Lot A",
         "status": "REJECTED",
-        "imageUrl": "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&q=80&w=800"
+        "imageUrl": img("photo-1547658718-f4311ad64746")
     },
 ]
 
@@ -333,7 +340,7 @@ def seed_database():
 
         new_ref = items_ref.push(item)
         icon = {"APPROVED": "+", "PENDING": "~", "REJECTED": "x"}[item["status"]]
-        print(f"  [{icon}] {item['title']:30s}  {item['type']:5s}  {item['status']:8s}  @ {item['location']}")
+        print(f"  [{icon}] {item['title']:40s}  {item['type']:5s}  {item['status']:8s}  @ {item['location']}")
 
     approved = sum(1 for i in ITEMS if i["status"] == "APPROVED")
     pending = sum(1 for i in ITEMS if i["status"] == "PENDING")

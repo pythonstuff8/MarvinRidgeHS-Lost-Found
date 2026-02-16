@@ -3,7 +3,5 @@ uvicorn
 firebase-admin
 python-multipart
 requests
-replicate
-groq
 cloudinary
 openai

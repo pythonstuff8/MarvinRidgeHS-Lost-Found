@@ -4,19 +4,18 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, db
 import os
-from groq import Groq
+import json
+from openai import OpenAI
 import cloudinary
 import cloudinary.uploader
-import base64
 import uuid
 
 # Import AI config
 from ai_config import (
-    AI_ENABLED, GROQ_API_KEY, VISION_MODEL, SEARCH_MODEL,
-    CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET,
-    OPENAI_API_KEY, OPENAI_VISION_MODEL
+    AI_ENABLED, OPENAI_API_KEY,
+    TEXT_MODEL, VISION_MODEL, IMAGE_MOD_MODEL,
+    CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 )
-from openai import OpenAI
 
 app = FastAPI(title="Marvin Ridge Lost & Found API")
 
@@ -34,8 +33,6 @@ firebase_creds_json = os.environ.get("FIREBASE_CREDENTIALS")
 
 if firebase_creds_json:
     try:
-        # Production: Load from Environment Variable
-        import json
         cred_dict = json.loads(firebase_creds_json)
         cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred, {
@@ -46,12 +43,11 @@ if firebase_creds_json:
     except Exception as e:
         print(f"Error initializing Firebase from Env Var: {e}")
 else:
-    # Local Development: Load from File
     cred_paths = [
         "../fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json",
         "fblalf-firebase-adminsdk-fbsvc-ce8e5771c0.json"
     ]
-    
+
     cred_path = next((p for p in cred_paths if os.path.exists(p)), None)
 
     if cred_path:
@@ -64,10 +60,7 @@ else:
     else:
         print(f"Warning: Firebase credentials not found. Checked: {cred_paths}")
 
-# Initialize Groq client
-groq_client = Groq(api_key=GROQ_API_KEY) if AI_ENABLED else None
-
-# Initialize OpenAI client for image moderation
+# Initialize OpenAI client
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if AI_ENABLED and OPENAI_API_KEY else None
 
 # Initialize Cloudinary
@@ -80,10 +73,6 @@ cloudinary.config(
 
 
 # --- Models ---
-class ChatRequest(BaseModel):
-    message: str
-    context: str = ""
-
 class DescribeRequest(BaseModel):
     image_url: str
 
@@ -106,39 +95,38 @@ class ImageModerationRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "ai_enabled": AI_ENABLED, "service": "Marvin Ridge Lost & Found Backend"}
+    return {
+        "status": "healthy",
+        "ai_enabled": AI_ENABLED and openai_client is not None,
+        "service": "Marvin Ridge Lost & Found Backend",
+        "text_model": TEXT_MODEL,
+        "vision_model": VISION_MODEL
+    }
 
 
 @app.get("/api/ai-status")
 def ai_status():
-    """Check if AI features are enabled"""
-    return {"ai_enabled": AI_ENABLED}
+    return {"ai_enabled": AI_ENABLED and openai_client is not None}
 
 
 @app.post("/api/upload-image")
 async def upload_image(request: ImageUploadRequest):
-    """
-    Upload base64 image to Cloudinary and return URL
-    """
     try:
         image_data = request.image_base64
-        
-        # Remove data URI prefix if present
+
         if "," in image_data:
             image_data = image_data.split(",")[1]
-        
-        # Generate unique public_id
+
         public_id = f"lostfound/{uuid.uuid4().hex[:12]}"
-        
-        # Upload to Cloudinary
+
         result = cloudinary.uploader.upload(
             f"data:image/jpeg;base64,{image_data}",
             public_id=public_id,
             folder="marvin_ridge_lf"
         )
-        
+
         return {"url": result["secure_url"], "public_id": result["public_id"]}
-    
+
     except Exception as e:
         print(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload image")
@@ -146,15 +134,13 @@ async def upload_image(request: ImageUploadRequest):
 
 @app.post("/api/moderate-content")
 async def moderate_content(request: ModerationRequest):
-    """
-    AI Safeguard: Check if submitted content is appropriate for a school lost & found
-    """
-    if not AI_ENABLED or not groq_client:
+    """AI text moderation using GPT-4.1-nano (cheapest, fastest)"""
+    if not AI_ENABLED or not openai_client:
         return {"approved": True, "reason": "AI moderation disabled"}
 
     try:
-        completion = groq_client.chat.completions.create(
-            model=SEARCH_MODEL,
+        completion = openai_client.chat.completions.create(
+            model=TEXT_MODEL,
             messages=[
                 {
                     "role": "system",
@@ -181,11 +167,10 @@ REASON: brief explanation (one sentence)"""
         )
 
         output = completion.choices[0].message.content
-        
-        # Parse response
+
         approved = True
         reason = "Content approved"
-        
+
         for line in output.split('\n'):
             if 'APPROVED:' in line.upper():
                 approved = 'true' in line.lower()
@@ -196,22 +181,18 @@ REASON: brief explanation (one sentence)"""
 
     except Exception as e:
         print(f"Moderation error: {e}")
-        # Default to approved if AI fails (don't block submissions)
         return {"approved": True, "reason": "Moderation check skipped"}
 
 
 @app.post("/api/moderate-image")
 async def moderate_image(request: ImageModerationRequest):
-    """
-    AI Safeguard: Check if uploaded image is appropriate for a school lost & found
-    Uses OpenAI GPT-4 Vision for image content moderation
-    """
+    """AI image moderation using GPT-4.1-nano vision (cheapest with vision)"""
     if not AI_ENABLED or not openai_client:
         return {"approved": True, "reason": "Image moderation disabled"}
 
     try:
         completion = openai_client.chat.completions.create(
-            model=OPENAI_VISION_MODEL,
+            model=IMAGE_MOD_MODEL,
             messages=[
                 {
                     "role": "system",
@@ -254,7 +235,6 @@ REASON: brief explanation (one sentence)"""
 
         output = completion.choices[0].message.content
 
-        # Parse response
         approved = True
         reason = "Image approved"
 
@@ -268,22 +248,19 @@ REASON: brief explanation (one sentence)"""
 
     except Exception as e:
         print(f"Image moderation error: {e}")
-        # Default to approved if AI fails (don't block submissions)
         return {"approved": True, "reason": "Image moderation check skipped"}
 
 
 @app.post("/api/ai-search")
 async def ai_search(request: SearchRequest):
-    """
-    AI-powered search using Groq Llama 3.1 8B
-    """
-    if not AI_ENABLED or not groq_client:
+    """AI-powered search using GPT-4.1-nano (cheapest, fastest)"""
+    if not AI_ENABLED or not openai_client:
         return fallback_search(request.query)
 
     try:
         items_ref = db.reference('items')
         items_data = items_ref.get()
-        
+
         if not items_data:
             return {"results": [], "corrected_query": request.query}
 
@@ -304,12 +281,12 @@ async def ai_search(request: SearchRequest):
             return {"results": [], "corrected_query": request.query}
 
         items_context = "\n".join([
-            f"ID:{i['id']} | {i['title']} | {i['category']} | {i['location']}" 
+            f"ID:{i['id']} | {i['title']} | {i['category']} | {i['location']}"
             for i in items_list[:30]
         ])
 
-        completion = groq_client.chat.completions.create(
-            model=SEARCH_MODEL,
+        completion = openai_client.chat.completions.create(
+            model=TEXT_MODEL,
             messages=[
                 {
                     "role": "system",
@@ -343,11 +320,11 @@ MATCHES: [comma-separated list of matching IDs, or "none" if no matches]"""
                     matching_ids = [id.strip() for id in ids_str.split(',') if id.strip()]
 
         results = [item for item in items_list if item['id'] in matching_ids]
-        
+
         if not results:
             search_lower = corrected.lower()
-            results = [item for item in items_list if 
-                search_lower in item['title'].lower() or 
+            results = [item for item in items_list if
+                search_lower in item['title'].lower() or
                 search_lower in item['description'].lower() or
                 search_lower in item['category'].lower()
             ]
@@ -365,14 +342,14 @@ def fallback_search(query: str):
         search_lower = query.lower()
         items_ref = db.reference('items')
         items_data = items_ref.get() or {}
-        
+
         results = []
         for item_id, item in items_data.items():
             if item.get('status') == 'APPROVED':
-                if (search_lower in item.get('title', '').lower() or 
+                if (search_lower in item.get('title', '').lower() or
                     search_lower in item.get('description', '').lower()):
                     results.append({"id": item_id, **item})
-        
+
         return {"results": results[:10], "corrected_query": query}
     except:
         return {"results": [], "corrected_query": query}
@@ -380,14 +357,12 @@ def fallback_search(query: str):
 
 @app.post("/api/describe-image")
 async def describe_image(request: DescribeRequest):
-    """
-    Describe an image using Groq Llama 4 Scout Vision model
-    """
-    if not AI_ENABLED or not groq_client:
+    """Describe an image using GPT-4.1-mini vision (best cost/perf for vision)"""
+    if not AI_ENABLED or not openai_client:
         return {"description": "AI features are disabled. Please describe the item manually."}
 
     try:
-        completion = groq_client.chat.completions.create(
+        completion = openai_client.chat.completions.create(
             model=VISION_MODEL,
             messages=[
                 {
