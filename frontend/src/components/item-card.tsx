@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Tag } from "lucide-react";
+import { Calendar, Tag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -85,10 +85,6 @@ export function ItemCard({ item }: { item: Item }) {
                     </p>
 
                     <div className="pt-2 flex flex-col gap-2 text-xs text-gray-500">
-                        <div className="flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-fbla-orange" />
-                            {item.location}
-                        </div>
                         <div className="flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5 text-fbla-blue" />
                             {item.date}
