@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
-import { Bell, CheckCircle, XCircle, MessageSquare, MapPin, Key } from "lucide-react";
+import { Bell, CheckCircle, XCircle, MessageSquare, MapPin, Key, Search } from "lucide-react";
 
 type Notification = {
     id: string;
@@ -48,6 +48,7 @@ export default function NotificationsPage() {
             case "ITEM_APPROVED": return <CheckCircle className="w-5 h-5 text-green-600" />;
             case "ITEM_REJECTED": return <XCircle className="w-5 h-5 text-red-500" />;
             case "INQUIRY_REPLY": return <MessageSquare className="w-5 h-5 text-fbla-blue" />;
+            case "MATCH_FOUND": return <Search className="w-5 h-5 text-fbla-orange" />;
             default: return <Bell className="w-5 h-5 text-gray-500" />;
         }
     };
@@ -55,6 +56,7 @@ export default function NotificationsPage() {
     const getBorderColor = (type: string) => {
         if (type === "CLAIM_APPROVED") return "border-green-200";
         if (type === "CLAIM_REJECTED") return "border-red-200";
+        if (type === "MATCH_FOUND") return "border-orange-200";
         return "border-gray-200";
     };
 
