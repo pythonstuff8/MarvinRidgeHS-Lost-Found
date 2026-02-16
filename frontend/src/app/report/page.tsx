@@ -8,7 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
-import { push, ref, set } from "firebase/database";
+import { push, ref, set, get } from "firebase/database";
+import { Item } from "@/components/item-card";
 import { db } from "@/lib/firebase";
 import { Dialog } from "@/components/dialog";
 
@@ -22,6 +23,7 @@ export default function ReportPage() {
     const [moderationResult, setModerationResult] = useState<{ approved: boolean; reason: string } | null>(null);
     const [imageModerationResult, setImageModerationResult] = useState<{ approved: boolean; reason: string } | null>(null);
     const [isModeratingImage, setIsModeratingImage] = useState(false);
+    const [potentialMatches, setPotentialMatches] = useState<Item[]>([]);
     const [formData, setFormData] = useState({
         type: "LOST",
         title: "",
@@ -178,6 +180,34 @@ export default function ReportPage() {
                 imageUrl: imageUrl || "",
                 createdAt: new Date().toISOString()
             });
+            // Find potential matches of opposite type
+            try {
+                const snapshot = await get(ref(db, "items"));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const oppositeType = formData.type === "LOST" ? "FOUND" : "LOST";
+                    const candidates = Object.entries(data)
+                        .map(([id, val]: [string, any]) => ({ id, ...val } as Item))
+                        .filter((i) => i.type === oppositeType && i.status === "APPROVED" && i.category === formData.category);
+
+                    const titleWords = formData.title.toLowerCase().split(/\s+/);
+                    const descWords = formData.description.toLowerCase().split(/\s+/);
+                    const words = [...titleWords, ...descWords].filter((w) => w.length > 3);
+
+                    const scored = candidates
+                        .map((c) => {
+                            const text = (c.title + " " + c.description).toLowerCase();
+                            const score = words.filter((w) => text.includes(w)).length;
+                            return { item: c, score };
+                        })
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 3)
+                        .map(({ item }) => item);
+
+                    setPotentialMatches(scored);
+                }
+            } catch { /* non-critical */ }
+
             setStep(2);
         } catch (e) {
             console.error("Error submitting", e);
@@ -439,12 +469,46 @@ export default function ReportPage() {
                                         </button>
                                     </Link>
                                     <button
-                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null }); setModerationResult(null); setImageModerationResult(null); }}
+                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
                                         className="px-6 py-3 rounded-xl bg-fbla-blue text-white font-bold hover:bg-blue-800 transition-colors"
                                     >
                                         Report Another
                                     </button>
                                 </div>
+
+                                {/* Potential Matches */}
+                                {potentialMatches.length > 0 && (
+                                    <div className="mt-8 pt-6 border-t border-gray-200 text-left">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                            {formData.type === "LOST" ? "Could one of these be yours?" : "Someone may have lost this item"}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 mb-4">
+                                            {formData.type === "LOST"
+                                                ? "These found items are in the same category and may match your report."
+                                                : "These lost reports may match the item you found."}
+                                        </p>
+                                        <div className="space-y-3">
+                                            {potentialMatches.map((m) => (
+                                                <Link key={m.id} href={`/items/${m.id}`} className="flex gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-fbla-blue transition-colors">
+                                                    {m.imageUrl ? (
+                                                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                                                            <Image src={m.imageUrl} alt={m.title} fill className="object-cover" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                                            <Camera className="w-6 h-6 text-gray-300" />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-sm text-gray-900 truncate">{m.title}</p>
+                                                        <p className="text-xs text-gray-500 line-clamp-1">{m.description}</p>
+                                                        <p className="text-xs text-fbla-blue font-medium mt-1">{m.type} &middot; {m.category}</p>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>

@@ -150,8 +150,8 @@ export function Navbar() {
                                                         className="block p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
                                                     >
                                                         <div className="flex gap-3">
-                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.type === "CLAIM_APPROVED" ? "bg-green-100 text-green-600" : notif.type === "CLAIM_REJECTED" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>
-                                                                {notif.type === "CLAIM_APPROVED" ? <CheckCircle className="w-4 h-4" /> : notif.type === "CLAIM_REJECTED" ? <Bell className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
+                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.type === "CLAIM_APPROVED" ? "bg-green-100 text-green-600" : notif.type === "CLAIM_REJECTED" ? "bg-red-100 text-red-600" : notif.type === "MATCH_FOUND" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"}`}>
+                                                                {notif.type === "CLAIM_APPROVED" ? <CheckCircle className="w-4 h-4" /> : notif.type === "CLAIM_REJECTED" ? <Bell className="w-4 h-4" /> : notif.type === "MATCH_FOUND" ? <Search className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-sm font-semibold text-gray-800 truncate">

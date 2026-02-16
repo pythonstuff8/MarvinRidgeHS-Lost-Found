@@ -159,10 +159,29 @@ export default function Dashboard() {
         });
     };
 
-    // Update item status (e.g., approve a pending item) and notify owner
+    // Find potential matches between lost and found items using category + keyword overlap
+    const findMatches = (item: Item, candidates: Item[]): Item[] => {
+        const titleWords = item.title.toLowerCase().split(/\s+/);
+        const descWords = item.description.toLowerCase().split(/\s+/);
+        const allWords = [...titleWords, ...descWords].filter(w => w.length > 3);
+
+        return candidates
+            .filter((c) => c.id !== item.id && c.category === item.category)
+            .map((c) => {
+                const cText = (c.title + " " + c.description).toLowerCase();
+                const overlap = allWords.filter(w => cText.includes(w)).length;
+                return { item: c, score: overlap };
+            })
+            .filter(({ score }) => score > 0)
+            .sort((a, b) => b.score - a.score)
+            .map(({ item }) => item);
+    };
+
+    // Update item status (e.g., approve a pending item), notify owner, and auto-match
     const handleStatus = async (itemId: string, status: string) => {
         const item = allItems.find((i) => i.id === itemId);
         await update(ref(db, `items/${itemId}`), { status });
+
         if (item && item.owner && item.owner !== "seed_script") {
             if (status === "APPROVED") {
                 await createNotification({
@@ -179,6 +198,47 @@ export default function Dashboard() {
                     message: `Your report "${item.title}" was not approved. Please contact an administrator if you have questions.`,
                 });
             }
+        }
+
+        // Auto-match: when approving, notify owners of opposite-type items that may match
+        if (item && status === "APPROVED") {
+            const oppositeType = item.type === "LOST" ? "FOUND" : "LOST";
+            const approvedOpposite = allItems.filter(
+                (i) => i.type === oppositeType && i.status === "APPROVED"
+            );
+            const matches = findMatches(item, approvedOpposite);
+
+            // Notify up to 3 best matches
+            const notifyTargets = matches.slice(0, 3);
+            for (const match of notifyTargets) {
+                if (match.owner && match.owner !== "seed_script") {
+                    // If we approved a FOUND item, notify people who LOST something similar
+                    // If we approved a LOST item, notify people who FOUND something similar
+                    if (item.type === "FOUND") {
+                        // Notify the person who lost a similar item
+                        await createNotification({
+                            userId: match.owner,
+                            type: "MATCH_FOUND",
+                            title: "Possible Match Found",
+                            message: `A found item "${item.title}" was just posted that may match your lost "${match.title}". Check the Browse Items page to see if it's yours.`,
+                        });
+                    } else {
+                        // item.type === "LOST" -- notify the person who found a similar item
+                        // But also notify the lost item owner about the existing found item
+                        if (item.owner && item.owner !== "seed_script") {
+                            await createNotification({
+                                userId: item.owner,
+                                type: "MATCH_FOUND",
+                                title: "Possible Match Found",
+                                message: `An existing found item "${match.title}" may match your lost "${item.title}". Check the Browse Items page to see if it's yours.`,
+                            });
+                        }
+                    }
+                }
+            }
+
+            // If a LOST item was approved and there are matches, also notify the lost reporter directly
+            // (handled above for each match -- the lost reporter gets up to 3 notifications for matches)
         }
     };
 
