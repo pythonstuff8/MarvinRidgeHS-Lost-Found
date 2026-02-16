@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Bell, LogOut, MessageSquare, ChevronRight, Search, Sun, Moon } from "lucide-react";
+import { Menu, X, Bell, LogOut, MessageSquare, ChevronRight, Search, Sun, Moon, CheckCircle } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
 import { ref, onValue, update } from "firebase/database";
@@ -11,10 +11,11 @@ import { db } from "@/lib/firebase";
 // Notification Data Structure
 type Notification = {
     id: string;
-    itemTitle: string;
+    type: string;
+    title: string;
     message: string;
-    adminReply?: string;
-    status: "OPEN" | "REPLIED";
+    pickupLocation?: string;
+    pickupCode?: string;
     read: boolean;
     createdAt: string;
 };
@@ -44,14 +45,16 @@ export function Navbar() {
     // Effect: Listen for notifications for the logged-in user
     useEffect(() => {
         if (user) {
-            const inquiriesRef = ref(db, 'inquiries');
-            const unsubscribe = onValue(inquiriesRef, (snapshot) => {
+            const notifsRef = ref(db, 'notifications');
+            const unsubscribe = onValue(notifsRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     const list = Object.entries(data)
                         .map(([id, val]: [string, any]) => ({ id, ...val }))
                         .filter((n: any) => n.userId === user.uid);
-                    setNotifications(list.reverse()); // Show newest first
+                    setNotifications(list.reverse());
+                } else {
+                    setNotifications([]);
                 }
             });
             return () => unsubscribe();
@@ -68,7 +71,7 @@ export function Navbar() {
             const updates: { [key: string]: any } = {};
             notifications.forEach(n => {
                 if (n.read === false) {
-                    updates[`inquiries/${n.id}/read`] = true;
+                    updates[`notifications/${n.id}/read`] = true;
                 }
             });
             await update(ref(db), updates);
@@ -147,15 +150,15 @@ export function Navbar() {
                                                         className="block p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
                                                     >
                                                         <div className="flex gap-3">
-                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.adminReply ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"}`}>
-                                                                {notif.adminReply ? <MessageSquare className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.type === "CLAIM_APPROVED" ? "bg-green-100 text-green-600" : notif.type === "CLAIM_REJECTED" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>
+                                                                {notif.type === "CLAIM_APPROVED" ? <CheckCircle className="w-4 h-4" /> : notif.type === "CLAIM_REJECTED" ? <Bell className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-sm font-semibold text-gray-800 truncate">
-                                                                    {notif.adminReply ? "New Reply" : "Inquiry Update"}
+                                                                    {notif.title}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 truncate">
-                                                                    {notif.itemTitle}
+                                                                    {notif.message}
                                                                 </p>
                                                                 <p className="text-[10px] text-gray-400 mt-1">
                                                                     {new Date(notif.createdAt).toLocaleDateString()}

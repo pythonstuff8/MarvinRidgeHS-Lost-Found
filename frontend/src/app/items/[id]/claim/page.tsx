@@ -13,7 +13,9 @@ export default function ClaimPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const params = useParams();
-    const [proof, setProof] = useState("");
+    const [claimedLocation, setClaimedLocation] = useState("");
+    const [claimedDescription, setClaimedDescription] = useState("");
+    const [additionalProof, setAdditionalProof] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [itemTitle, setItemTitle] = useState("this item");
 
@@ -61,7 +63,9 @@ export default function ClaimPage() {
                 userId: user.uid,
                 username: user.email?.split('@')[0] || "User",
                 itemTitle: itemTitle,
-                proof,
+                claimedLocation,
+                claimedDescription,
+                additionalProof: additionalProof || null,
                 status: "PENDING",
                 createdAt: new Date().toISOString()
             });
@@ -90,20 +94,48 @@ export default function ClaimPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="bg-fbla-blue/5 border border-fbla-blue/20 p-4 rounded-2xl">
+                        <p className="text-xs text-fbla-blue leading-relaxed">
+                            <strong>Verification:</strong> To confirm ownership, please answer the questions below. The item's location is hidden -- only the true owner would know where they lost it.
+                        </p>
+                    </div>
+
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Proof of Ownership</label>
-                        <textarea
-                            value={proof}
-                            onChange={(e) => setProof(e.target.value)}
+                        <label className="text-sm font-bold text-gray-700 ml-1">Where did you lose this item?</label>
+                        <input
+                            type="text"
+                            value={claimedLocation}
+                            onChange={(e) => setClaimedLocation(e.target.value)}
                             required
-                            placeholder="Please describe the item in detail (e.g., unique marks, contents, serial number) or provide any other proof that you are the owner."
-                            className="w-full p-4 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-orange/20 outline-none h-48 resize-none"
+                            placeholder="e.g., Cafeteria, Room F201, Library, Gym"
+                            className="w-full p-4 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-orange/20 outline-none"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Describe the item in detail</label>
+                        <textarea
+                            value={claimedDescription}
+                            onChange={(e) => setClaimedDescription(e.target.value)}
+                            required
+                            placeholder="Color, brand, size, distinguishing marks, contents, scratches, stickers, etc."
+                            className="w-full p-4 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-orange/20 outline-none h-32 resize-none"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Additional proof (optional)</label>
+                        <textarea
+                            value={additionalProof}
+                            onChange={(e) => setAdditionalProof(e.target.value)}
+                            placeholder="Receipts, serial numbers, photos on your phone, or any other evidence of ownership."
+                            className="w-full p-4 rounded-2xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-orange/20 outline-none h-24 resize-none"
                         />
                     </div>
 
                     <div className="bg-fbla-orange/5 border border-fbla-orange/20 p-4 rounded-2xl">
                         <p className="text-xs text-fbla-orange leading-relaxed">
-                            <strong>Note:</strong> False claims are subject to school disciplinary action. Please ensure your description is as accurate as possible.
+                            <strong>Note:</strong> False claims are subject to school disciplinary action. An administrator will review your claim and compare your answers against the actual item details.
                         </p>
                     </div>
 

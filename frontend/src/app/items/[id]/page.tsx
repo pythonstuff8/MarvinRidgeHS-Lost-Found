@@ -82,17 +82,8 @@ export default function ItemDetail() {
                             </p>
                         </div>
 
-                        {/* Location & Date - Clean horizontal layout */}
-                        <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
-                                    <MapPin className="w-5 h-5 text-fbla-orange" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wide">Location</p>
-                                    <p className="text-gray-900 font-medium">{item.location}</p>
-                                </div>
-                            </div>
+                        {/* Date & Location Notice */}
+                        <div className="py-4 border-t border-b border-gray-200 space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
                                     <Calendar className="w-5 h-5 text-fbla-blue" />
@@ -100,6 +91,15 @@ export default function ItemDetail() {
                                 <div>
                                     <p className="text-xs text-gray-500 uppercase font-bold tracking-wide">Date</p>
                                     <p className="text-gray-900 font-medium">{item.date}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-fbla-orange/10 flex items-center justify-center border border-fbla-orange/20">
+                                    <MapPin className="w-5 h-5 text-fbla-orange" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wide">Location</p>
+                                    <p className="text-sm text-gray-500 italic">Shared with verified owners after claim approval</p>
                                 </div>
                             </div>
                         </div>
