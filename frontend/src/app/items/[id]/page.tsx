@@ -2,21 +2,62 @@
 
 import { Navbar } from "@/components/navbar";
 import { Item } from "@/components/item-card";
-import { MapPin, Calendar, Tag, ArrowLeft, Share2 } from "lucide-react";
+import { MapPin, Calendar, Tag, ArrowLeft, Share2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { ref, get, onValue } from "firebase/database";
+import { ref, get, onValue, remove, push, set } from "firebase/database";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/context/auth-context";
+import { Dialog } from "@/components/dialog";
 
 export default function ItemDetail() {
     const params = useParams();
     const router = useRouter();
+    const { user } = useAuth();
     const [item, setItem] = useState<Item | null>(null);
     const [matches, setMatches] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
+    const [claiming, setClaiming] = useState(false);
+    const [dialogState, setDialogState] = useState<{ isOpen: boolean; title: string; message: string; type: "info" | "success" | "warning" | "danger" }>({
+        isOpen: false, title: "", message: "", type: "info"
+    });
+
+    const handleLowValueClaim = async () => {
+        if (!user || !item) return;
+        setClaiming(true);
+        try {
+            // Create notification with pickup location
+            const notifRef = push(ref(db, "notifications"));
+            await set(notifRef, {
+                userId: user.uid,
+                type: "ITEM_CLAIMED",
+                title: "Item Claimed",
+                message: `You claimed "${item.title}". Pick it up at ${item.location}.`,
+                read: false,
+                createdAt: new Date().toISOString(),
+            });
+            // Remove item from listings
+            await remove(ref(db, `items/${item.id}`));
+            setDialogState({
+                isOpen: true,
+                title: "Item Claimed!",
+                message: `Pick it up at ${item.location}.`,
+                type: "success"
+            });
+        } catch {
+            setDialogState({
+                isOpen: true,
+                title: "Error",
+                message: "Failed to claim item. Please try again.",
+                type: "danger"
+            });
+        } finally {
+            setClaiming(false);
+        }
+    };
 
     useEffect(() => {
         if (params.id) {
@@ -156,7 +197,11 @@ export default function ItemDetail() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-500 uppercase font-bold tracking-wide">Location</p>
-                                    <p className="text-sm text-gray-500 italic">Shared with verified owners after claim approval</p>
+                                    {item.highValue ? (
+                                        <p className="text-sm text-gray-500 italic">Shared with verified owners after claim approval</p>
+                                    ) : (
+                                        <p className="text-gray-900 font-medium">{item.location}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -164,11 +209,21 @@ export default function ItemDetail() {
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 pt-2">
                             {item.type === "FOUND" && (
-                                <Link href={`/items/${item.id}/claim`} className="flex-1">
-                                    <button className="w-full py-3 bg-fbla-orange text-white font-bold rounded hover:bg-orange-600 transition-colors">
-                                        Claim this Item
+                                item.highValue ? (
+                                    <Link href={`/items/${item.id}/claim`} className="flex-1">
+                                        <button className="w-full py-3 bg-fbla-orange text-white font-bold rounded hover:bg-orange-600 transition-colors">
+                                            Claim this Item
+                                        </button>
+                                    </Link>
+                                ) : (
+                                    <button
+                                        onClick={handleLowValueClaim}
+                                        disabled={claiming || !user}
+                                        className="flex-1 py-3 bg-fbla-orange text-white font-bold rounded hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {claiming ? <><Loader2 className="w-4 h-4 animate-spin" /> Claiming...</> : "Claim this Item"}
                                     </button>
-                                </Link>
+                                )
                             )}
                             <Link href={`/items/${item.id}/inquiry`} className="flex-1">
                                 <button className="w-full py-3 bg-fbla-blue text-white font-bold rounded hover:bg-blue-800 transition-colors">
@@ -216,6 +271,17 @@ export default function ItemDetail() {
                     </div>
                 )}
             </main>
+
+            <Dialog
+                isOpen={dialogState.isOpen}
+                onClose={() => {
+                    setDialogState(prev => ({ ...prev, isOpen: false }));
+                    if (dialogState.type === "success") router.push("/items");
+                }}
+                title={dialogState.title}
+                description={dialogState.message}
+                type={dialogState.type}
+            />
         </div>
     );
 }
