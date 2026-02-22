@@ -6,8 +6,9 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter, useParams } from "next/navigation";
 import { push, ref, set, get } from "firebase/database";
 import { db } from "@/lib/firebase";
-import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert, Camera, X } from "lucide-react";
 import { Dialog } from "@/components/dialog";
+import Image from "next/image";
 
 export default function ClaimPage() {
     const { user, loading } = useAuth();
@@ -16,7 +17,9 @@ export default function ClaimPage() {
     const [claimedLocation, setClaimedLocation] = useState("");
     const [claimedDescription, setClaimedDescription] = useState("");
     const [additionalProof, setAdditionalProof] = useState("");
+    const [proofImages, setProofImages] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [itemTitle, setItemTitle] = useState("this item");
 
     // Dialog State
@@ -55,12 +58,67 @@ export default function ClaimPage() {
         }
     }, [user, loading, router, params.id]);
 
+    const uploadToCloudinary = async (fileDataUrl: string): Promise<string | null> => {
+        try {
+            const formData = new FormData();
+            formData.append("file", fileDataUrl);
+            formData.append("upload_preset", "mrhs_lf");
+
+            const res = await fetch("https://api.cloudinary.com/v1_1/dgb28z8k8/image/upload", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (data.secure_url) return data.secure_url;
+            throw new Error(data.error?.message || "Upload failed");
+        } catch (e) {
+            console.error("Cloudinary upload error:", e);
+            return null;
+        }
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        const remaining = 3 - proofImages.length;
+        const toProcess = Array.from(files).slice(0, remaining);
+
+        toProcess.forEach((file) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProofImages(prev => {
+                    if (prev.length >= 3) return prev;
+                    return [...prev, reader.result as string];
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Reset input so re-selecting the same file works
+        e.target.value = "";
+    };
+
+    const removeImage = (index: number) => {
+        setProofImages(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !params.id) return;
         setIsSubmitting(true);
 
         try {
+            // Upload proof images to Cloudinary
+            let proofImageUrls: string[] = [];
+            if (proofImages.length > 0) {
+                setIsUploading(true);
+                const uploadPromises = proofImages.map(img => uploadToCloudinary(img));
+                const results = await Promise.all(uploadPromises);
+                proofImageUrls = results.filter((url): url is string => url !== null);
+                setIsUploading(false);
+            }
+
             const claimRef = push(ref(db, 'claims'));
             await set(claimRef, {
                 itemId: params.id,
@@ -70,15 +128,18 @@ export default function ClaimPage() {
                 claimedLocation,
                 claimedDescription,
                 additionalProof: additionalProof || null,
+                proofImageUrls: proofImageUrls.length > 0 ? proofImageUrls : null,
                 status: "PENDING",
                 createdAt: new Date().toISOString()
             });
 
             showDialog("Claim Submitted", "Your claim has been submitted. An administrator will carefully review it and get back to you.", "success");
         } catch (e) {
-            showDialog("Error", "Failed to submit claim request", "danger");
+            console.error("Claim submission error:", e);
+            showDialog("Error", "Failed to submit claim request. Please try again.", "danger");
         } finally {
             setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
 
@@ -148,6 +209,45 @@ export default function ClaimPage() {
                         />
                     </div>
 
+                    {/* Proof Image Upload */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Upload proof images (optional, max 3)</label>
+                        <p className="text-xs text-gray-500 ml-1">Photos of receipts, screenshots of purchase, photos of the item on your phone, etc.</p>
+
+                        {proofImages.length > 0 && (
+                            <div className="flex gap-3 flex-wrap">
+                                {proofImages.map((img, i) => (
+                                    <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200 group">
+                                        <Image src={img} alt={`Proof ${i + 1}`} fill className="object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(i)}
+                                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {proofImages.length < 3 && (
+                            <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-fbla-orange transition-colors cursor-pointer group text-center bg-gray-50">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleImageUpload}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-fbla-orange transition-colors">
+                                    <Camera className="w-6 h-6 mb-1" />
+                                    <span className="text-sm font-medium">Click to add photos ({proofImages.length}/3)</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="bg-fbla-orange/5 border border-fbla-orange/20 p-4 rounded-2xl">
                         <p className="text-xs text-fbla-orange leading-relaxed">
                             <strong>Note:</strong> False claims are subject to school disciplinary action. An administrator will review your claim and compare your answers against the actual item details.
@@ -156,10 +256,15 @@ export default function ClaimPage() {
 
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isUploading}
                         className="w-full py-4 rounded-2xl bg-fbla-orange text-white font-bold flex items-center justify-center gap-2 hover:bg-fbla-orange/90 transition-all shadow-lg shadow-fbla-orange/20 disabled:opacity-50"
                     >
-                        {isSubmitting ? (
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="animate-spin" />
+                                Uploading Images...
+                            </>
+                        ) : isSubmitting ? (
                             <Loader2 className="animate-spin" />
                         ) : (
                             "Submit Claim Request"

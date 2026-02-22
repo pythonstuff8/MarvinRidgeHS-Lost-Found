@@ -33,6 +33,7 @@ type Claim = {
     claimedDescription: string;
     additionalProof?: string;
     proof?: string; // legacy field
+    proofImageUrls?: string[];
     itemId: string;
 };
 
@@ -426,6 +427,18 @@ export default function Dashboard() {
                                                         <div>
                                                             <p className="text-xs text-gray-500 font-bold">Additional Proof:</p>
                                                             <p className="text-gray-800 break-words">{claim.additionalProof}</p>
+                                                        </div>
+                                                    )}
+                                                    {claim.proofImageUrls && claim.proofImageUrls.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-bold mb-1">Proof Images:</p>
+                                                            <div className="flex gap-2 flex-wrap">
+                                                                {claim.proofImageUrls.map((url: string, i: number) => (
+                                                                    <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                                                                        <img src={url} alt={`Proof ${i + 1}`} className="w-20 h-20 object-cover rounded-lg border border-orange-200 hover:border-fbla-orange transition-colors" />
+                                                                    </a>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
