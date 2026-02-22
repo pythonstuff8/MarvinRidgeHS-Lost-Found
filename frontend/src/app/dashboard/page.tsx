@@ -575,6 +575,34 @@ export default function Dashboard() {
                                 </table>
                             </div>
                         </div>
+                    ) : role === "ADMIN" && activeTab === "pending" ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            {allItems.filter(i => i.status === "PENDING").length > 0 ? allItems.filter(i => i.status === "PENDING").map((item) => (
+                                <div key={item.id} className="bg-white rounded-2xl border border-yellow-200 overflow-hidden shadow-sm">
+                                    <ItemCard item={item} />
+                                    <div className="flex gap-2 p-3 border-t border-gray-100">
+                                        <button
+                                            onClick={() => handleStatus(item.id, "APPROVED")}
+                                            className="flex-1 py-2 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition-colors"
+                                        >
+                                            Approve
+                                        </button>
+                                        <button
+                                            onClick={() => handleStatus(item.id, "REJECTED")}
+                                            className="flex-1 py-2 bg-white text-red-600 border border-red-200 rounded-xl font-bold text-sm hover:bg-red-50 transition-colors"
+                                        >
+                                            Reject
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="py-2 px-3 bg-white text-gray-400 border border-gray-200 rounded-xl hover:bg-red-50 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )) : <p className="text-gray-500 col-span-full py-10 text-center">No pending items to review.</p>}
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                             {myItems.length > 0 ? myItems.map((item) => (
