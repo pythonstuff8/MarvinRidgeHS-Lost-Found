@@ -5,8 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Item, ItemCard } from "@/components/item-card";
-import { LayoutDashboard, Trash2, CheckCircle, Send, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { LayoutDashboard, Trash2, CheckCircle, Send } from "lucide-react";
 import { ref, remove, update, onValue, push, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { Dialog } from "@/components/dialog";
@@ -29,18 +28,12 @@ type Claim = {
     username: string;
     userId: string;
     itemTitle: string;
-    status: "PENDING" | "APPROVED" | "REJECTED" | "AI_APPROVED" | "AI_REJECTED";
+    status: "PENDING" | "APPROVED" | "REJECTED";
     claimedLocation: string;
     claimedDescription: string;
     additionalProof?: string;
     proof?: string; // legacy field
     itemId: string;
-    aiReview?: {
-        approved: boolean;
-        reason: string;
-        confidence: number;
-        reviewedAt: string;
-    };
 };
 
 /**
@@ -388,7 +381,7 @@ export default function Dashboard() {
                             onClick={() => setActiveTab("claims")}
                             className={`pb-3 px-1 font-bold whitespace-nowrap transition-colors text-sm md:text-base ${activeTab === "claims" ? "text-fbla-orange border-b-2 border-fbla-orange" : "text-gray-500 hover:text-gray-900"}`}
                         >
-                            Claims ({claims.filter(c => c.status === "PENDING" || c.status === "AI_APPROVED" || c.status === "AI_REJECTED").length})
+                            Claims ({claims.filter(c => c.status === "PENDING").length})
                         </button>
                     </div>
                 )}
@@ -409,11 +402,9 @@ export default function Dashboard() {
                                                 claim.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
                                                 claim.status === "APPROVED" ? "bg-green-100 text-green-700" :
                                                 claim.status === "REJECTED" ? "bg-red-100 text-red-700" :
-                                                claim.status === "AI_APPROVED" ? "bg-emerald-100 text-emerald-700" :
-                                                claim.status === "AI_REJECTED" ? "bg-orange-100 text-orange-700" :
                                                 "bg-gray-100 text-gray-700"
                                             }`}>
-                                                {claim.status.replace("_", " ")}
+                                                {claim.status}
                                             </span>
                                         </div>
 
@@ -466,60 +457,19 @@ export default function Dashboard() {
                                             </div>
                                         </div>
 
-                                        {/* AI Review Result */}
-                                        {claim.aiReview && (
-                                            <div className={cn(
-                                                "p-4 rounded-xl border mb-4",
-                                                claim.aiReview.approved
-                                                    ? "bg-green-50 border-green-200"
-                                                    : "bg-red-50 border-red-200"
-                                            )}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <p className="text-xs font-bold uppercase flex items-center gap-2">
-                                                        <Sparkles className="w-4 h-4" />
-                                                        AI Verification Result
-                                                    </p>
-                                                    <span className={cn(
-                                                        "text-xs font-bold px-2 py-1 rounded",
-                                                        claim.aiReview.approved
-                                                            ? "bg-green-100 text-green-700"
-                                                            : "bg-red-100 text-red-700"
-                                                    )}>
-                                                        {claim.aiReview.approved ? "AI APPROVED" : "AI REJECTED"}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-700">{claim.aiReview.reason}</p>
-                                                <div className="mt-2 flex items-center gap-2">
-                                                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className={cn(
-                                                                "h-2 rounded-full",
-                                                                claim.aiReview.confidence >= 70 ? "bg-green-500" :
-                                                                claim.aiReview.confidence >= 40 ? "bg-yellow-500" : "bg-red-500"
-                                                            )}
-                                                            style={{ width: `${claim.aiReview.confidence}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-xs font-bold text-gray-600">
-                                                        {claim.aiReview.confidence}% confidence
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {(claim.status === "PENDING" || claim.status === "AI_APPROVED" || claim.status === "AI_REJECTED") && (
+                                        {claim.status === "PENDING" && (
                                             <div className="flex gap-3">
                                                 <button
                                                     onClick={() => handleClaimStatus(claim.id, claim.itemId, "APPROVED")}
                                                     className="flex-1 py-2 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition-colors shadow-sm"
                                                 >
-                                                    {claim.status === "AI_APPROVED" ? "Confirm AI Approval" : "Approve Claim"}
+                                                    Approve Claim
                                                 </button>
                                                 <button
                                                     onClick={() => handleClaimStatus(claim.id, claim.itemId, "REJECTED")}
                                                     className="flex-1 py-2 bg-white text-red-600 border border-red-200 rounded-xl font-bold text-sm hover:bg-red-50 transition-colors"
                                                 >
-                                                    {claim.status === "AI_REJECTED" ? "Confirm AI Rejection" : "Reject Claim"}
+                                                    Reject Claim
                                                 </button>
                                             </div>
                                         )}
