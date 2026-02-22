@@ -14,6 +14,7 @@ import uuid
 from ai_config import (
     AI_ENABLED, OPENAI_API_KEY,
     TEXT_MODEL, VISION_MODEL, IMAGE_MOD_MODEL,
+    CLAIM_REVIEW_MODEL, VALUE_THRESHOLD,
     CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 )
 
@@ -89,6 +90,15 @@ class ModerationRequest(BaseModel):
 
 class ImageModerationRequest(BaseModel):
     image_url: str
+
+class ValueEvaluationRequest(BaseModel):
+    title: str
+    description: str
+    category: str
+
+class ClaimReviewRequest(BaseModel):
+    item_id: str
+    claim_id: str
 
 
 # --- Endpoints ---
@@ -249,6 +259,187 @@ REASON: brief explanation (one sentence)"""
     except Exception as e:
         print(f"Image moderation error: {e}")
         return {"approved": True, "reason": "Image moderation check skipped"}
+
+
+@app.post("/api/evaluate-value")
+async def evaluate_value(request: ValueEvaluationRequest):
+    """AI determines if an item is high value ($50+) for a high school setting."""
+    if not AI_ENABLED or not openai_client:
+        return {"highValue": False, "reason": "AI disabled, defaulting to low value"}
+
+    try:
+        completion = openai_client.chat.completions.create(
+            model=TEXT_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""You are a value estimator for a high school lost and found system.
+Determine if an item is likely worth ${VALUE_THRESHOLD} or more.
+
+HIGH VALUE examples: AirPods, iPhones, laptops, tablets, graphing calculators (TI-84/TI-Nspire),
+smartwatches, Apple Watches, designer wallets, prescription glasses, car keys with fob,
+MacBook chargers, Beats/Bose headphones, gaming devices, jewelry, class rings.
+
+LOW VALUE examples: water bottles, pens, pencils, notebooks, spiral binders, umbrellas,
+lanyards, hair ties, generic phone cables, erasers, folders, lunch containers, plastic rulers.
+
+Respond ONLY in this format:
+HIGH_VALUE: true or false
+REASON: one sentence explanation"""
+                },
+                {
+                    "role": "user",
+                    "content": f"Title: {request.title}\nCategory: {request.category}\nDescription: {request.description}"
+                }
+            ],
+            temperature=0.1,
+            max_completion_tokens=80
+        )
+
+        output = completion.choices[0].message.content
+        high_value = False
+        reason = "Unable to determine"
+
+        for line in output.split('\n'):
+            if 'HIGH_VALUE:' in line.upper():
+                high_value = 'true' in line.lower()
+            elif 'REASON:' in line.upper():
+                reason = line.split(':', 1)[1].strip() if ':' in line else reason
+
+        return {"highValue": high_value, "reason": reason}
+
+    except Exception as e:
+        print(f"Value evaluation error: {e}")
+        return {"highValue": False, "reason": "Evaluation failed, defaulting to low value"}
+
+
+@app.post("/api/ai-review-claim")
+async def ai_review_claim(request: ClaimReviewRequest):
+    """AI reviews a claim by comparing claimant answers to actual item data (used for low-value items)."""
+    if not AI_ENABLED or not openai_client:
+        return {
+            "approved": False,
+            "reason": "AI disabled -- claim requires manual admin review",
+            "confidence": 0,
+            "needsAdminReview": True
+        }
+
+    try:
+        item_ref = db.reference(f'items/{request.item_id}')
+        item_data = item_ref.get()
+        if not item_data:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        claim_ref = db.reference(f'claims/{request.claim_id}')
+        claim_data = claim_ref.get()
+        if not claim_data:
+            raise HTTPException(status_code=404, detail="Claim not found")
+
+        actual_location = item_data.get('location', 'Unknown')
+        actual_description = item_data.get('description', '')
+        actual_title = item_data.get('title', '')
+        actual_category = item_data.get('category', '')
+
+        claimed_location = claim_data.get('claimedLocation', '')
+        claimed_description = claim_data.get('claimedDescription', '')
+        additional_proof = claim_data.get('additionalProof', '')
+
+        completion = openai_client.chat.completions.create(
+            model=CLAIM_REVIEW_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a claim verification assistant for a high school lost and found.
+Compare the claimant's answers to the actual item data. Consider:
+
+1. LOCATION MATCH: Does the claimed location match or is it very close to the actual location?
+   - Exact match or same general area (e.g., "cafeteria" vs "lunch room") = strong match
+   - Same building but different room = weak match
+   - Completely different area = no match
+
+2. DESCRIPTION MATCH: Does the claimant's description align with the actual item?
+   - Mentions correct brand, color, distinguishing features = strong match
+   - Generic description that could match many items = weak match
+   - Contradicts actual item details = no match
+
+3. ADDITIONAL PROOF: Any serial numbers, receipts, or specific knowledge that only an owner would know.
+
+Respond ONLY in this exact format:
+APPROVED: true or false
+CONFIDENCE: number from 0 to 100
+REASON: 1-2 sentence explanation of your decision
+
+Guidelines:
+- If confidence is below 60, set APPROVED to false regardless
+- If location is completely wrong, set APPROVED to false
+- Be strict -- false claims should not pass through"""
+                },
+                {
+                    "role": "user",
+                    "content": f"""ACTUAL ITEM DATA:
+Title: {actual_title}
+Category: {actual_category}
+Location: {actual_location}
+Description: {actual_description}
+
+CLAIMANT'S ANSWERS:
+Guessed Location: {claimed_location}
+Item Description: {claimed_description}
+Additional Proof: {additional_proof or 'None provided'}"""
+                }
+            ],
+            temperature=0.2,
+            max_completion_tokens=200
+        )
+
+        output = completion.choices[0].message.content
+        approved = False
+        confidence = 0
+        reason = "Unable to evaluate"
+
+        for line in output.split('\n'):
+            if 'APPROVED:' in line.upper():
+                approved = 'true' in line.lower()
+            elif 'CONFIDENCE:' in line.upper():
+                try:
+                    conf_str = line.split(':', 1)[1].strip()
+                    confidence = int(''.join(c for c in conf_str if c.isdigit())[:3])
+                except:
+                    confidence = 0
+            elif 'REASON:' in line.upper():
+                reason = line.split(':', 1)[1].strip() if ':' in line else reason
+
+        needs_admin = confidence < 70
+
+        import datetime
+        claim_ref.update({
+            'aiReview': {
+                'approved': approved,
+                'reason': reason,
+                'confidence': confidence,
+                'reviewedAt': datetime.datetime.now().isoformat()
+            },
+            'status': 'AI_APPROVED' if (approved and not needs_admin) else
+                      'AI_REJECTED' if (not approved and not needs_admin) else 'PENDING'
+        })
+
+        return {
+            "approved": approved,
+            "reason": reason,
+            "confidence": confidence,
+            "needsAdminReview": needs_admin
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"AI claim review error: {e}")
+        return {
+            "approved": False,
+            "reason": "AI review failed -- requires manual admin review",
+            "confidence": 0,
+            "needsAdminReview": True
+        }
 
 
 @app.post("/api/ai-search")

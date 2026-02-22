@@ -10,6 +10,8 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 TEXT_MODEL = "gpt-4.1-nano"          # Cheapest & fastest - text moderation, search
 VISION_MODEL = "gpt-4.1-mini"       # Best cost/perf for vision - image description
 IMAGE_MOD_MODEL = "gpt-4.1-nano"    # Cheapest with vision - image moderation (yes/no)
+CLAIM_REVIEW_MODEL = "gpt-4.1-mini" # Better reasoning for claim verification
+VALUE_THRESHOLD = 50                 # Dollar threshold for "high value" in a high school setting
 
 # Cloudinary Configuration (set via environment variables)
 CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")

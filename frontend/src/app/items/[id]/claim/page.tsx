@@ -6,7 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter, useParams } from "next/navigation";
 import { push, ref, set, get } from "firebase/database";
 import { db } from "@/lib/firebase";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert, Sparkles } from "lucide-react";
 import { Dialog } from "@/components/dialog";
 
 export default function ClaimPage() {
@@ -18,6 +18,8 @@ export default function ClaimPage() {
     const [additionalProof, setAdditionalProof] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [itemTitle, setItemTitle] = useState("this item");
+    const [isHighValue, setIsHighValue] = useState(false);
+    const [isAiReviewing, setIsAiReviewing] = useState(false);
 
     // Dialog State
     const [dialogState, setDialogState] = useState<{ isOpen: boolean; title: string; message: string; type: "info" | "success" | "warning" | "danger" }>({
@@ -33,8 +35,7 @@ export default function ClaimPage() {
 
     const closeDialog = () => {
         setDialogState(prev => ({ ...prev, isOpen: false }));
-        // Redirect if it was a success message
-        if (dialogState.type === "success") {
+        if (dialogState.type === "success" || dialogState.type === "warning" || dialogState.type === "info") {
             router.push("/items/" + params.id);
         }
     };
@@ -45,7 +46,9 @@ export default function ClaimPage() {
         if (params.id) {
             get(ref(db, `items/${params.id}`)).then((snapshot) => {
                 if (snapshot.exists()) {
-                    setItemTitle(snapshot.val().title);
+                    const data = snapshot.val();
+                    setItemTitle(data.title);
+                    setIsHighValue(data.highValue === true);
                 }
             });
         }
@@ -58,6 +61,7 @@ export default function ClaimPage() {
 
         try {
             const claimRef = push(ref(db, 'claims'));
+            const claimId = claimRef.key;
             await set(claimRef, {
                 itemId: params.id,
                 userId: user.uid,
@@ -69,7 +73,56 @@ export default function ClaimPage() {
                 status: "PENDING",
                 createdAt: new Date().toISOString()
             });
-            showDialog("Claim Submitted", "Claim request submitted! An admin will review it shortly.", "success");
+
+            // Low-value items: trigger AI review
+            if (!isHighValue && claimId) {
+                setIsAiReviewing(true);
+                try {
+                    const reviewRes = await fetch(
+                        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ai-review-claim`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                item_id: params.id,
+                                claim_id: claimId
+                            })
+                        }
+                    );
+                    if (reviewRes.ok) {
+                        const reviewData = await reviewRes.json();
+
+                        if (reviewData.approved && !reviewData.needsAdminReview) {
+                            showDialog(
+                                "Claim Verified by AI",
+                                `Your claim has been automatically verified (${reviewData.confidence}% confidence). An admin will finalize the pickup details shortly.`,
+                                "success"
+                            );
+                        } else if (!reviewData.approved && !reviewData.needsAdminReview) {
+                            showDialog(
+                                "Claim Not Verified",
+                                `AI review: ${reviewData.reason}. If you believe this is an error, an admin will review your claim.`,
+                                "warning"
+                            );
+                        } else {
+                            showDialog(
+                                "Claim Under Review",
+                                "Your claim has been submitted and will be reviewed by an administrator.",
+                                "info"
+                            );
+                        }
+                    } else {
+                        showDialog("Claim Submitted", "Claim submitted! An admin will review it shortly.", "success");
+                    }
+                } catch {
+                    showDialog("Claim Submitted", "Claim submitted! An admin will review it shortly.", "success");
+                } finally {
+                    setIsAiReviewing(false);
+                }
+            } else {
+                // High-value item: standard admin review
+                showDialog("Claim Submitted", "Your claim has been submitted. An administrator will carefully review it and get back to you.", "success");
+            }
         } catch (e) {
             showDialog("Error", "Failed to submit claim request", "danger");
         } finally {
@@ -88,7 +141,7 @@ export default function ClaimPage() {
                         <ShieldCheck className="w-8 h-8 text-fbla-orange" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Claim "{itemTitle}"</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">Claim &quot;{itemTitle}&quot;</h1>
                         <p className="text-muted-foreground text-sm text-gray-500">Submit proof of ownership to claim this item.</p>
                     </div>
                 </div>
@@ -96,9 +149,32 @@ export default function ClaimPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="bg-fbla-blue/5 border border-fbla-blue/20 p-4 rounded-2xl">
                         <p className="text-xs text-fbla-blue leading-relaxed">
-                            <strong>Verification:</strong> To confirm ownership, please answer the questions below. The item's location is hidden -- only the true owner would know where they lost it.
+                            <strong>Verification:</strong> To confirm ownership, please answer the questions below. The item&apos;s location is hidden -- only the true owner would know where they lost it.
                         </p>
                     </div>
+
+                    {/* Review method indicator */}
+                    {isHighValue ? (
+                        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-start gap-3">
+                            <ShieldAlert className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
+                            <div>
+                                <p className="text-sm font-bold text-yellow-800">High Value Item -- Admin Review</p>
+                                <p className="text-xs text-yellow-600 mt-1">
+                                    This is a high-value item. Your claim will be carefully reviewed by an administrator. Please provide accurate and detailed information.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-3">
+                            <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                            <div>
+                                <p className="text-sm font-bold text-blue-800">AI-Powered Verification</p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                    Your claim will be automatically reviewed by AI for faster processing. Provide accurate details for the best results.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-gray-700 ml-1">Where did you lose this item?</label>
@@ -135,16 +211,22 @@ export default function ClaimPage() {
 
                     <div className="bg-fbla-orange/5 border border-fbla-orange/20 p-4 rounded-2xl">
                         <p className="text-xs text-fbla-orange leading-relaxed">
-                            <strong>Note:</strong> False claims are subject to school disciplinary action. An administrator will review your claim and compare your answers against the actual item details.
+                            <strong>Note:</strong> False claims are subject to school disciplinary action. {isHighValue ? "An administrator" : "Our AI system"} will review your claim and compare your answers against the actual item details.
                         </p>
                     </div>
 
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isAiReviewing}
                         className="w-full py-4 rounded-2xl bg-fbla-orange text-white font-bold flex items-center justify-center gap-2 hover:bg-fbla-orange/90 transition-all shadow-lg shadow-fbla-orange/20 disabled:opacity-50"
                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : "Submit Claim Request"}
+                        {isAiReviewing ? (
+                            <><Loader2 className="animate-spin" /> AI is Reviewing Your Claim...</>
+                        ) : isSubmitting ? (
+                            <Loader2 className="animate-spin" />
+                        ) : (
+                            "Submit Claim Request"
+                        )}
                     </button>
                 </form>
             </main>
