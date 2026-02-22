@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { Bell, CheckCircle, XCircle, MessageSquare, MapPin, Key, Search } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 type Notification = {
     id: string;
@@ -85,17 +86,39 @@ export default function NotificationsPage() {
                                     <p className="text-sm text-gray-600 mb-3">{notif.message}</p>
 
                                     {notif.type === "CLAIM_APPROVED" && notif.pickupCode && (
-                                        <div className="bg-green-50 border border-green-200 p-4 rounded-xl space-y-3">
+                                        <div className="bg-green-50 border border-green-200 p-4 rounded-xl space-y-4">
                                             <div className="flex items-center gap-2">
                                                 <Key className="w-4 h-4 text-green-700" />
-                                                <p className="text-sm font-bold text-green-800">Pickup Code</p>
+                                                <p className="text-sm font-bold text-green-800">Pickup Verification</p>
                                             </div>
-                                            <p className="text-2xl font-mono font-bold text-green-700 tracking-widest text-center py-2">{notif.pickupCode}</p>
+
+                                            {/* QR Code */}
+                                            <div className="flex justify-center py-2">
+                                                <div className="bg-white p-3 rounded-xl shadow-sm border border-green-100">
+                                                    <QRCodeSVG
+                                                        value={JSON.stringify({
+                                                            code: notif.pickupCode,
+                                                            type: "CLAIM_PICKUP"
+                                                        })}
+                                                        size={160}
+                                                        level="M"
+                                                        bgColor="#ffffff"
+                                                        fgColor="#15803d"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Text Code */}
+                                            <div className="text-center">
+                                                <p className="text-xs text-green-600 mb-1">Or show this code:</p>
+                                                <p className="text-2xl font-mono font-bold text-green-700 tracking-widest py-1">{notif.pickupCode}</p>
+                                            </div>
+
                                             <div className="flex items-center gap-2">
                                                 <MapPin className="w-4 h-4 text-green-700" />
                                                 <p className="text-sm text-green-800"><span className="font-bold">Pickup Location:</span> {notif.pickupLocation}</p>
                                             </div>
-                                            <p className="text-xs text-green-600">Show this code to the administrator or front desk when picking up your item.</p>
+                                            <p className="text-xs text-green-600">Show this QR code or text code to the administrator when picking up your item.</p>
                                         </div>
                                     )}
                                 </div>

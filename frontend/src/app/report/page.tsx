@@ -32,7 +32,8 @@ export default function ReportPage() {
         location: "",
         description: "",
         image: null as string | null,
-        imageUrl: null as string | null  // Cloudinary URL
+        imageUrl: null as string | null,  // Cloudinary URL
+        highValue: false
     });
 
     // Dialog State
@@ -168,6 +169,7 @@ export default function ReportPage() {
 
             // Step 4: Submit to Firebase
             const newItemRef = push(ref(db, 'items'));
+            const itemId = newItemRef.key;
             await set(newItemRef, {
                 title: formData.title,
                 category: formData.category,
@@ -178,8 +180,32 @@ export default function ReportPage() {
                 owner: user.uid,
                 status: "PENDING",
                 imageUrl: imageUrl || "",
+                highValue: formData.highValue,
                 createdAt: new Date().toISOString()
             });
+
+            // Step 5: AI Value Evaluation (may auto-upgrade to high-value)
+            try {
+                const evalRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/evaluate-value`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: formData.title,
+                        description: formData.description,
+                        category: formData.category
+                    })
+                });
+                if (evalRes.ok) {
+                    const evalData = await evalRes.json();
+                    if (evalData.highValue && !formData.highValue) {
+                        const { update: fbUpdate } = await import("firebase/database");
+                        await fbUpdate(ref(db, `items/${itemId}`), { highValue: true });
+                    }
+                }
+            } catch (e) {
+                console.error("Value evaluation error (non-blocking):", e);
+            }
+
             // Find potential matches of opposite type
             try {
                 const snapshot = await get(ref(db, "items"));
@@ -431,6 +457,26 @@ export default function ReportPage() {
                                         </div>
                                     </div>
 
+                                    {/* High Value Toggle */}
+                                    <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-yellow-100 rounded-lg">
+                                                <ShieldAlert className="w-5 h-5 text-yellow-700" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-gray-800">High Value Item</p>
+                                                <p className="text-xs text-gray-500">Toggle if this item is worth $50+ (e.g., AirPods, phone, laptop)</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, highValue: !prev.highValue }))}
+                                            className={`relative w-12 h-6 rounded-full transition-colors ${formData.highValue ? "bg-yellow-500" : "bg-gray-300"}`}
+                                        >
+                                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.highValue ? "translate-x-6" : ""}`} />
+                                        </button>
+                                    </div>
+
                                     {/* AI Safety Badge */}
                                     <div className="flex items-center gap-2 text-sm text-gray-500 bg-green-50 px-3 py-2 rounded-lg border border-green-100">
                                         <ShieldCheck className="w-4 h-4 text-green-600" />
@@ -469,7 +515,7 @@ export default function ReportPage() {
                                         </button>
                                     </Link>
                                     <button
-                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
+                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null, highValue: false }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
                                         className="px-6 py-3 rounded-xl bg-fbla-blue text-white font-bold hover:bg-blue-800 transition-colors"
                                     >
                                         Report Another
