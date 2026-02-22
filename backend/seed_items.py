@@ -32,7 +32,7 @@ if not firebase_admin._apps:
         'databaseURL': 'https://fblalf-default-rtdb.firebaseio.com/'
     })
 
-# Unsplash CDN base URL helper
+# Unsplash CDN helper — all IDs verified to return HTTP 200
 def img(photo_id):
     return f"https://images.unsplash.com/{photo_id}?auto=format&fit=crop&w=800&q=80"
 
@@ -63,17 +63,17 @@ ITEMS = [
         "description": "Black rectangular prescription eyeglasses found on a table in the media center. No case included. Lightweight plastic frames.",
         "category": "Personal Items",
         "type": "FOUND",
-        "location": "Media Center",
+        "location": "Room G108",
         "status": "APPROVED",
         "highValue": False,
-        "imageUrl": img("photo-1574258495973-f7977603b6d2")
+        "imageUrl": img("photo-1483412468200-72182dbbc544")
     },
     {
         "title": "Red Hydro Flask Water Bottle",
         "description": "32 oz red Hydro Flask with a few stickers on it including a mountain design and a smiley face. Found on the bleachers after lunch.",
         "category": "Personal Items",
         "type": "FOUND",
-        "location": "Gym Bleachers",
+        "location": "Gym",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1536939459926-301728717817")
@@ -83,7 +83,7 @@ ITEMS = [
         "description": "Set of car keys on a black lanyard keychain. Has a Toyota key fob and two other small keys. Found on the ground near the student lot.",
         "category": "Personal Items",
         "type": "FOUND",
-        "location": "Parking Lot B",
+        "location": "Cafeteria",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1582139329536-e7284fece509")
@@ -93,7 +93,7 @@ ITEMS = [
         "description": "13-inch silver MacBook Pro found in the library study room. Has a clear hard case and a small scratch on the top lid. Password locked.",
         "category": "Electronics",
         "type": "FOUND",
-        "location": "Library Study Room 3",
+        "location": "Room F105",
         "status": "APPROVED",
         "highValue": True,
         "imageUrl": img("photo-1517336714731-489689fd1ca8")
@@ -103,17 +103,17 @@ ITEMS = [
         "description": "Black automatic compact umbrella found leaning against the wall by the front entrance after the rainstorm on Monday.",
         "category": "Personal Items",
         "type": "FOUND",
-        "location": "Main Entrance",
+        "location": "Cafeteria",
         "status": "APPROVED",
         "highValue": False,
-        "imageUrl": img("photo-1534309466160-70b22cc6254b")
+        "imageUrl": img("photo-1675174943162-6eda8320fb0e")
     },
     {
         "title": "Chemistry Textbook",
         "description": "AP Chemistry textbook (Zumdahl, 10th edition) found on a bench. Has sticky notes and highlights throughout. Name on inside cover is smudged.",
         "category": "Books",
         "type": "FOUND",
-        "location": "Courtyard Bench",
+        "location": "Room E102",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1497633762265-9d179a990aa6")
@@ -125,7 +125,7 @@ ITEMS = [
         "description": "Pair of medium-sized gold hoop earrings. One fell off during PE and I couldn't find it. They have sentimental value — gift from my grandmother.",
         "category": "Personal Items",
         "type": "LOST",
-        "location": "Gym",
+        "location": "Aux Gym",
         "status": "APPROVED",
         "highValue": True,
         "imageUrl": img("photo-1630019852942-f89202989a59")
@@ -135,7 +135,7 @@ ITEMS = [
         "description": "Gray Nike pullover hoodie, size medium. Has a small bleach stain on the left sleeve. Left it on the back of my chair in 4th period.",
         "category": "Clothing",
         "type": "LOST",
-        "location": "Room F201",
+        "location": "Room F101",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1556821840-3a63f95609a7")
@@ -145,7 +145,7 @@ ITEMS = [
         "description": "TI-84 Plus CE graphing calculator in black. Has my initials 'JM' written in silver sharpie on the back. Need it for my AP Calc exam.",
         "category": "Electronics",
         "type": "LOST",
-        "location": "Room G118",
+        "location": "Room G110",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1564466809058-bf4114d55352")
@@ -165,7 +165,7 @@ ITEMS = [
         "description": "Light wash blue denim jacket, women's size small. Has a small enamel pin on the collar (daisy design). Left it in the art room.",
         "category": "Clothing",
         "type": "LOST",
-        "location": "Art Room",
+        "location": "Room E108",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1576995853123-5a10305d93c0")
@@ -175,7 +175,7 @@ ITEMS = [
         "description": "iPhone 15 in a clear case. Screen has a crack in the top right corner. Has a photo of my dog as the lock screen wallpaper.",
         "category": "Electronics",
         "type": "LOST",
-        "location": "Main Hallway",
+        "location": "Room G104",
         "status": "APPROVED",
         "highValue": True,
         "imageUrl": img("photo-1601784551446-20c9e07cdbdb")
@@ -185,19 +185,19 @@ ITEMS = [
         "description": "White Logitech wireless mouse. Left it plugged into a computer in the media center. Has a small scratch on the bottom.",
         "category": "Electronics",
         "type": "LOST",
-        "location": "Media Center",
+        "location": "Room F109",
         "status": "APPROVED",
         "highValue": False,
         "imageUrl": img("photo-1527864550417-7fd91fc51a46")
     },
 
-    # ===================== PENDING items (7) =====================
+    # ===================== PENDING items (6) =====================
     {
         "title": "Varsity Letterman Jacket",
         "description": "Black and gold varsity letterman jacket with 'MRHS' on the back. Found draped over the railing near the gym entrance.",
         "category": "Clothing",
         "type": "FOUND",
-        "location": "Gym Entrance",
+        "location": "Gym",
         "status": "PENDING",
         "highValue": False,
         "imageUrl": img("photo-1591047139829-d91aecb6caea")
@@ -207,7 +207,7 @@ ITEMS = [
         "description": "Small black USB flash drive found plugged into a library computer. Brand looks like SanDisk.",
         "category": "Electronics",
         "type": "FOUND",
-        "location": "Library Computer Lab",
+        "location": "Room F103",
         "status": "PENDING",
         "highValue": False,
         "imageUrl": img("photo-1618410320928-25228d811631")
@@ -220,14 +220,14 @@ ITEMS = [
         "location": "Cafeteria",
         "status": "PENDING",
         "highValue": False,
-        "imageUrl": img("photo-1604467707321-70d009801bf9")
+        "imageUrl": img("photo-1651764728175-16c9fee5e85e")
     },
     {
         "title": "Student ID on Lanyard",
-        "description": "School ID badge on a red lanyard. Found on the floor in the B hallway. Name is partially visible.",
+        "description": "School ID badge on a red lanyard. Found on the floor in the hallway near G wing. Name is partially visible.",
         "category": "Personal Items",
         "type": "FOUND",
-        "location": "Hallway B",
+        "location": "Room G100",
         "status": "PENDING",
         "highValue": False,
         "imageUrl": img("photo-1671726203449-34e89df45211")
@@ -237,7 +237,7 @@ ITEMS = [
         "description": "Lost my gray canvas pencil case with all my drawing supplies — mechanical pencils, erasers, and colored pens. Had it in art class.",
         "category": "Personal Items",
         "type": "LOST",
-        "location": "Art Room",
+        "location": "Room E110",
         "status": "PENDING",
         "highValue": False,
         "imageUrl": img("photo-1513542789411-b6a5d4f31634")
@@ -247,20 +247,10 @@ ITEMS = [
         "description": "Lost my Apple Watch with a black sport band. Took it off before gym and forgot to grab it. Has a green watch face.",
         "category": "Electronics",
         "type": "LOST",
-        "location": "Boys Locker Room",
+        "location": "Aux Gym",
         "status": "PENDING",
         "highValue": True,
-        "imageUrl": img("photo-1546868871-af0de0ae72be")
-    },
-    {
-        "title": "North Face Puffer Jacket",
-        "description": "Black North Face 700 fill puffer jacket, men's size large. Left it in the auditorium during the assembly.",
-        "category": "Clothing",
-        "type": "LOST",
-        "location": "Auditorium",
-        "status": "PENDING",
-        "highValue": True,
-        "imageUrl": img("photo-1544923246-77307dd270b0")
+        "imageUrl": img("photo-1434494343833-76b479733705")
     },
 
     # ===================== REJECTED items (3) =====================
@@ -269,7 +259,7 @@ ITEMS = [
         "description": "Wired earbuds with a frayed cable and broken left earbud. Found on the floor. Too damaged to be claimed.",
         "category": "Electronics",
         "type": "FOUND",
-        "location": "Hallway C",
+        "location": "Room G106",
         "status": "REJECTED",
         "highValue": False,
         "imageUrl": ""
@@ -279,17 +269,17 @@ ITEMS = [
         "description": "One black winter glove, right hand only. Heavily worn with holes in the fingers. Found near the bus loop.",
         "category": "Clothing",
         "type": "FOUND",
-        "location": "Bus Loop",
+        "location": "Cafeteria",
         "status": "REJECTED",
         "highValue": False,
         "imageUrl": ""
     },
     {
         "title": "Cracked Empty Phone Case",
-        "description": "Clear iPhone case, heavily cracked and yellowed. No phone inside. Found in trash area near parking lot.",
+        "description": "Clear iPhone case, heavily cracked and yellowed. No phone inside. Found in trash area.",
         "category": "Electronics",
         "type": "FOUND",
-        "location": "Parking Lot A",
+        "location": "Cafeteria",
         "status": "REJECTED",
         "highValue": False,
         "imageUrl": ""
