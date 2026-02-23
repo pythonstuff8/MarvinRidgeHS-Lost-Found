@@ -25,7 +25,7 @@ export type Item = {
     highValue?: boolean;
 };
 
-export function ItemCard({ item }: { item: Item }) {
+export function ItemCard({ item, hideActions, isAdmin }: { item: Item; hideActions?: boolean; isAdmin?: boolean }) {
     const { role } = useAuth();
     const [error, setError] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export function ItemCard({ item }: { item: Item }) {
                             fill
                             className={cn(
                                 "object-cover transition-transform duration-500 group-hover:scale-110",
-                                item.highValue && "blur-lg"
+                                item.highValue && !isAdmin && "blur-lg"
                             )}
                         />
                     ) : (
@@ -85,8 +85,8 @@ export function ItemCard({ item }: { item: Item }) {
                         </div>
                     )}
 
-                    {/* Blur overlay for high value */}
-                    {item.highValue && item.imageUrl && (
+                    {/* Blur overlay for high value (not shown to admins) */}
+                    {item.highValue && item.imageUrl && !isAdmin && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-[5]">
                             <p className="text-white font-bold text-sm bg-black/50 px-3 py-1 rounded-full">
                                 Image Protected
@@ -114,7 +114,7 @@ export function ItemCard({ item }: { item: Item }) {
                         </div>
                     </div>
 
-                    {role === "ADMIN" && item.status === "PENDING" ? (
+                    {role === "ADMIN" && item.status === "PENDING" && !hideActions ? (
                         <div className="flex gap-2 mt-4">
                             <button
                                 onClick={() => handleStatusChange("APPROVED")}

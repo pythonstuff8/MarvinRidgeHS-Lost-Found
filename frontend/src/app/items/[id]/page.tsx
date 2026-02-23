@@ -47,7 +47,8 @@ export default function ItemDetail() {
                 message: `Pick it up at ${item.location}.`,
                 type: "success"
             });
-        } catch {
+        } catch (err) {
+            console.error("Claim error:", err);
             setDialogState({
                 isOpen: true,
                 title: "Error",
