@@ -579,7 +579,7 @@ export default function Dashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                             {allItems.filter(i => i.status === "PENDING").length > 0 ? allItems.filter(i => i.status === "PENDING").map((item) => (
                                 <div key={item.id} className="bg-white rounded-2xl border border-yellow-200 overflow-hidden shadow-sm">
-                                    <ItemCard item={item} />
+                                    <ItemCard item={item} hideActions isAdmin />
                                     <div className="flex gap-2 p-3 border-t border-gray-100">
                                         <button
                                             onClick={() => handleStatus(item.id, "APPROVED")}
