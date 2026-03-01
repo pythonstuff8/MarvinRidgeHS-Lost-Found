@@ -114,7 +114,7 @@ export function ItemCard({ item, hideActions, isAdmin }: { item: Item; hideActio
                         </div>
                     </div>
 
-                    {role === "ADMIN" && item.status === "PENDING" && !hideActions ? (
+                    {hideActions ? null : role === "ADMIN" && item.status === "PENDING" ? (
                         <div className="flex gap-2 mt-4">
                             <button
                                 onClick={() => handleStatusChange("APPROVED")}

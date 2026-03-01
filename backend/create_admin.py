@@ -13,8 +13,7 @@ except ValueError:
     })
 
 def create_admin_user(username, password):
-    # We still need an email for Firebase Auth, so we append a hidden suffix.
-    # This suffix must match what is used in the frontend auth-context.tsx
+    #Creates a admin user in Firebase Auth 
     email = f"{username}@lf.app"
     
     try:
@@ -30,15 +29,14 @@ def create_admin_user(username, password):
             # If user exists, fetch them
             user = auth.get_user_by_email(email)
             print(f"User '{username}' already exists (UID: {user.uid}). Updating role...")
-            # Optional: Update password if needed, but for now we just promote
-            # auth.update_user(user.uid, password=password)
+
 
         # 2. Set Role in Realtime DB
         ref = db.reference(f'users/{user.uid}')
         ref.update({
             'username': username,
             'role': 'ADMIN',
-            'createdAt': 'SERVER_TIMESTAMP' # Simple placeholder
+            'createdAt': 'SERVER_TIMESTAMP'
         })
         print(f"Successfully set '{username}' as ADMIN.")
         
