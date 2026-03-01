@@ -24,6 +24,7 @@ export default function ReportPage() {
     const [imageModerationResult, setImageModerationResult] = useState<{ approved: boolean; reason: string } | null>(null);
     const [isModeratingImage, setIsModeratingImage] = useState(false);
     const [potentialMatches, setPotentialMatches] = useState<Item[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         type: "LOST",
         title: "",
@@ -56,21 +57,21 @@ export default function ReportPage() {
         if (!loading && !user) router.push("/login");
     }, [user, loading, router]);
 
-    const uploadToCloudinary = async (fileDataUrl: string) => {
+    const uploadToCloudinary = async (file: File) => {
         try {
-            const formData = new FormData();
-            formData.append("file", fileDataUrl);
-            formData.append("upload_preset", "mrhs_lf"); // Using assumed preset
+            const uploadData = new FormData();
+            uploadData.append("file", file);
+            uploadData.append("upload_preset", "mrhs_lf");
 
             const res = await fetch("https://api.cloudinary.com/v1_1/dgb28z8k8/image/upload", {
                 method: "POST",
-                body: formData
+                body: uploadData
             });
             const data = await res.json();
             if (data.secure_url) return data.secure_url;
             throw new Error(data.error?.message || "Upload failed");
         } catch (e) {
-            console.error(e);
+            console.error("Cloudinary upload error:", e);
             return null;
         }
     };
@@ -148,9 +149,9 @@ export default function ReportPage() {
 
             // Step 2: Upload image to Cloudinary if present
             let imageUrl = formData.imageUrl;
-            if (formData.image && !formData.imageUrl) {
+            if (imageFile && !formData.imageUrl) {
                 setIsUploading(true);
-                imageUrl = await uploadToCloudinary(formData.image);
+                imageUrl = await uploadToCloudinary(imageFile);
                 setIsUploading(false);
 
                 if (imageUrl) {
@@ -246,6 +247,7 @@ export default function ReportPage() {
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData(prev => ({ ...prev, image: reader.result as string }));
@@ -255,14 +257,14 @@ export default function ReportPage() {
     };
 
     const handleAIDescribe = async () => {
-        if (!formData.image) return;
+        if (!formData.image || !imageFile) return;
         setIsDescribing(true);
 
         try {
             // First upload to get URL
             let imageUrl = formData.imageUrl;
             if (!imageUrl) {
-                imageUrl = await uploadToCloudinary(formData.image);
+                imageUrl = await uploadToCloudinary(imageFile);
                 if (imageUrl) {
                     setFormData(prev => ({ ...prev, imageUrl }));
                 }
@@ -515,7 +517,7 @@ export default function ReportPage() {
                                         </button>
                                     </Link>
                                     <button
-                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null, highValue: false }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
+                                        onClick={() => { setStep(1); setImageFile(null); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null, highValue: false }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
                                         className="px-6 py-3 rounded-xl bg-fbla-blue text-white font-bold hover:bg-blue-800 transition-colors"
                                     >
                                         Report Another
