@@ -58,21 +58,18 @@ export default function ClaimPage() {
         }
     }, [user, loading, router, params.id]);
 
-    const uploadToCloudinary = async (fileDataUrl: string): Promise<string | null> => {
+    const uploadImage = async (imageBase64: string): Promise<string | null> => {
         try {
-            const formData = new FormData();
-            formData.append("file", fileDataUrl);
-            formData.append("upload_preset", "mrhs_lf");
-
-            const res = await fetch("https://api.cloudinary.com/v1_1/dgb28z8k8/image/upload", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-image`, {
                 method: "POST",
-                body: formData
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image_base64: imageBase64 })
             });
             const data = await res.json();
-            if (data.secure_url) return data.secure_url;
-            throw new Error(data.error?.message || "Upload failed");
+            if (data.url) return data.url;
+            throw new Error("Upload failed");
         } catch (e) {
-            console.error("Cloudinary upload error:", e);
+            console.error("Image upload error:", e);
             return null;
         }
     };
@@ -113,7 +110,7 @@ export default function ClaimPage() {
             let proofImageUrls: string[] = [];
             if (proofImages.length > 0) {
                 setIsUploading(true);
-                const uploadPromises = proofImages.map(img => uploadToCloudinary(img));
+                const uploadPromises = proofImages.map(img => uploadImage(img));
                 const results = await Promise.all(uploadPromises);
                 proofImageUrls = results.filter((url): url is string => url !== null);
                 setIsUploading(false);

@@ -24,7 +24,6 @@ export default function ReportPage() {
     const [imageModerationResult, setImageModerationResult] = useState<{ approved: boolean; reason: string } | null>(null);
     const [isModeratingImage, setIsModeratingImage] = useState(false);
     const [potentialMatches, setPotentialMatches] = useState<Item[]>([]);
-    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         type: "LOST",
         title: "",
@@ -57,21 +56,18 @@ export default function ReportPage() {
         if (!loading && !user) router.push("/login");
     }, [user, loading, router]);
 
-    const uploadToCloudinary = async (file: File) => {
+    const uploadImage = async (imageBase64: string): Promise<string | null> => {
         try {
-            const uploadData = new FormData();
-            uploadData.append("file", file);
-            uploadData.append("upload_preset", "mrhs_lf");
-
-            const res = await fetch("https://api.cloudinary.com/v1_1/dgb28z8k8/image/upload", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-image`, {
                 method: "POST",
-                body: uploadData
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image_base64: imageBase64 })
             });
             const data = await res.json();
-            if (data.secure_url) return data.secure_url;
-            throw new Error(data.error?.message || "Upload failed");
+            if (data.url) return data.url;
+            throw new Error("Upload failed");
         } catch (e) {
-            console.error("Cloudinary upload error:", e);
+            console.error("Image upload error:", e);
             return null;
         }
     };
@@ -147,11 +143,11 @@ export default function ReportPage() {
                 return; // Block submission
             }
 
-            // Step 2: Upload image to Cloudinary if present
+            // Step 2: Upload image if present
             let imageUrl = formData.imageUrl;
-            if (imageFile && !formData.imageUrl) {
+            if (formData.image && !formData.imageUrl) {
                 setIsUploading(true);
-                imageUrl = await uploadToCloudinary(imageFile);
+                imageUrl = await uploadImage(formData.image);
                 setIsUploading(false);
 
                 if (imageUrl) {
@@ -247,24 +243,23 @@ export default function ReportPage() {
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, image: reader.result as string }));
+                setFormData(prev => ({ ...prev, image: reader.result as string, imageUrl: null }));
             };
             reader.readAsDataURL(file);
         }
     };
 
     const handleAIDescribe = async () => {
-        if (!formData.image || !imageFile) return;
+        if (!formData.image) return;
         setIsDescribing(true);
 
         try {
             // First upload to get URL
             let imageUrl = formData.imageUrl;
             if (!imageUrl) {
-                imageUrl = await uploadToCloudinary(imageFile);
+                imageUrl = await uploadImage(formData.image);
                 if (imageUrl) {
                     setFormData(prev => ({ ...prev, imageUrl }));
                 }
@@ -517,7 +512,7 @@ export default function ReportPage() {
                                         </button>
                                     </Link>
                                     <button
-                                        onClick={() => { setStep(1); setImageFile(null); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null, highValue: false }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
+                                        onClick={() => { setStep(1); setFormData({ type: "LOST", title: "", category: "", date: "", location: "", description: "", image: null, imageUrl: null, highValue: false }); setModerationResult(null); setImageModerationResult(null); setPotentialMatches([]); }}
                                         className="px-6 py-3 rounded-xl bg-fbla-blue text-white font-bold hover:bg-blue-800 transition-colors"
                                     >
                                         Report Another
