@@ -9,6 +9,7 @@ import { db } from "@/lib/firebase";
 import { Loader2, ShieldCheck, ShieldAlert, Camera, X } from "lucide-react";
 import { Dialog } from "@/components/dialog";
 import Image from "next/image";
+import { convertImageToJpeg } from "@/lib/image-utils";
 
 export default function ClaimPage() {
     const { user, loading } = useAuth();
@@ -74,23 +75,24 @@ export default function ClaimPage() {
         }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
 
         const remaining = 3 - proofImages.length;
         const toProcess = Array.from(files).slice(0, remaining);
 
-        toProcess.forEach((file) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
+        for (const file of toProcess) {
+            try {
+                const jpegDataUrl = await convertImageToJpeg(file);
                 setProofImages(prev => {
                     if (prev.length >= 3) return prev;
-                    return [...prev, reader.result as string];
+                    return [...prev, jpegDataUrl];
                 });
-            };
-            reader.readAsDataURL(file);
-        });
+            } catch (err) {
+                console.error("Image conversion error:", err);
+            }
+        }
 
         // Reset input so re-selecting the same file works
         e.target.value = "";
@@ -232,7 +234,7 @@ export default function ClaimPage() {
                             <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-fbla-orange transition-colors cursor-pointer group text-center bg-gray-50">
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,.heic,.heif"
                                     multiple
                                     onChange={handleImageUpload}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
