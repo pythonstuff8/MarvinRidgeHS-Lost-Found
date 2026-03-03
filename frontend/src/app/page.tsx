@@ -155,7 +155,7 @@ export default function Home() {
                       <span>Submit a claim request</span>
                     </div>
                   </div>
-                  <Link href="/report" className="text-fbla-blue font-bold text-sm hover:underline">
+                  <Link href="/how-to-claim" className="text-fbla-blue font-bold text-sm hover:underline">
                     Read More
                   </Link>
                 </div>
