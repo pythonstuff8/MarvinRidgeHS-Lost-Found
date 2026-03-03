@@ -12,6 +12,7 @@ import { push, ref, set, get } from "firebase/database";
 import { Item } from "@/components/item-card";
 import { db } from "@/lib/firebase";
 import { Dialog } from "@/components/dialog";
+import { convertImageToJpeg } from "@/lib/image-utils";
 
 export default function ReportPage() {
     const { user, loading } = useAuth();
@@ -240,14 +241,15 @@ export default function ReportPage() {
         }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, image: reader.result as string, imageUrl: null }));
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+        try {
+            const jpegDataUrl = await convertImageToJpeg(file);
+            setFormData(prev => ({ ...prev, image: jpegDataUrl, imageUrl: null }));
+        } catch (err) {
+            console.error("Image conversion error:", err);
+            showDialog("Unsupported Image", "Could not process this image format. Please try a JPEG or PNG file.", "warning");
         }
     };
 
@@ -440,7 +442,7 @@ export default function ReportPage() {
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">Upload Image</label>
                                         <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-fbla-blue transition-colors cursor-pointer group text-center bg-gray-50">
-                                            <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                                            <input type="file" accept="image/*,.heic,.heif" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                                             {formData.image ? (
                                                 <div className="relative h-40 w-full">
                                                     <Image src={formData.image} alt="Preview" fill className="object-contain rounded-lg" />
