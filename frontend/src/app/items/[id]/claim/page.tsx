@@ -147,9 +147,9 @@ export default function ClaimPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-            <main className="flex-1 container mx-auto px-4 py-8 max-w-lg">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-8 max-w-lg">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-fbla-orange/10 rounded-2xl">
+                    <div className="p-3 bg-fbla-orange/10 rounded-2xl" aria-hidden="true">
                         <ShieldCheck className="w-8 h-8 text-fbla-orange" />
                     </div>
                     <div>
@@ -165,8 +165,8 @@ export default function ClaimPage() {
                         </p>
                     </div>
 
-                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-start gap-3">
-                        <ShieldAlert className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
+                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-start gap-3" role="alert">
+                        <ShieldAlert className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" aria-hidden="true" />
                         <div>
                             <p className="text-sm font-bold text-yellow-800">High Value Item — Admin Review</p>
                             <p className="text-xs text-yellow-600 mt-1">
@@ -176,8 +176,9 @@ export default function ClaimPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Where did you lose this item?</label>
+                        <label htmlFor="claim-location" className="text-sm font-bold text-gray-700 ml-1">Where did you lose this item?</label>
                         <input
+                            id="claim-location"
                             type="text"
                             value={claimedLocation}
                             onChange={(e) => setClaimedLocation(e.target.value)}
@@ -188,8 +189,9 @@ export default function ClaimPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Describe the item in detail</label>
+                        <label htmlFor="claim-description" className="text-sm font-bold text-gray-700 ml-1">Describe the item in detail</label>
                         <textarea
+                            id="claim-description"
                             value={claimedDescription}
                             onChange={(e) => setClaimedDescription(e.target.value)}
                             required
@@ -199,8 +201,9 @@ export default function ClaimPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Additional proof (optional)</label>
+                        <label htmlFor="claim-proof" className="text-sm font-bold text-gray-700 ml-1">Additional proof (optional)</label>
                         <textarea
+                            id="claim-proof"
                             value={additionalProof}
                             onChange={(e) => setAdditionalProof(e.target.value)}
                             placeholder="Receipts, serial numbers, photos on your phone, or any other evidence of ownership."
@@ -221,9 +224,10 @@ export default function ClaimPage() {
                                         <button
                                             type="button"
                                             onClick={() => removeImage(i)}
-                                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            aria-label={`Remove proof image ${i + 1}`}
+                                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                                         >
-                                            <X className="w-3.5 h-3.5" />
+                                            <X className="w-3.5 h-3.5" aria-hidden="true" />
                                         </button>
                                     </div>
                                 ))}
@@ -232,14 +236,16 @@ export default function ClaimPage() {
 
                         {proofImages.length < 3 && (
                             <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-fbla-orange transition-colors cursor-pointer group text-center bg-gray-50">
+                                <label htmlFor="claim-images" className="sr-only">Upload proof images</label>
                                 <input
+                                    id="claim-images"
                                     type="file"
                                     accept="image/*,.heic,.heif"
                                     multiple
                                     onChange={handleImageUpload}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
-                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-fbla-orange transition-colors">
+                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-fbla-orange transition-colors" aria-hidden="true">
                                     <Camera className="w-6 h-6 mb-1" />
                                     <span className="text-sm font-medium">Click to add photos ({proofImages.length}/3)</span>
                                 </div>

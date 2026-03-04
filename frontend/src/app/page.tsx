@@ -51,7 +51,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
+      <main id="main-content" className="flex-1 container mx-auto px-4 py-8 md:py-12">
         {/* Page Title Section */}
         <div className="mb-8 border-b-2 border-fbla-blue pb-2 inline-block">
           <h1 className="text-3xl md:text-5xl font-bold text-fbla-blue">
@@ -97,7 +97,9 @@ export default function Home() {
             <div className="pt-8">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Search</h3>
               <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
+                <label htmlFor="home-search" className="sr-only">Search items by keywords</label>
                 <input
+                  id="home-search"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -108,7 +110,7 @@ export default function Home() {
                   type="submit"
                   className="bg-fbla-orange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded transition-colors flex items-center gap-2"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-5 h-5" aria-hidden="true" />
                   SEARCH
                 </button>
               </form>
@@ -120,12 +122,12 @@ export default function Home() {
             {/* Sidebar Block 1: Recent Finds */}
             <div className="bg-mrhs-bg p-6 border-t-4 border-fbla-blue shadow-sm">
               <div className="flex gap-4">
-                <div className="bg-fbla-blue text-white p-3 text-center min-w-[70px] h-fit">
+                <div className="bg-fbla-blue text-white p-3 text-center min-w-[70px] h-fit" aria-hidden="true">
                   <span className="block text-xs uppercase font-bold text-blue-100">ITEMS</span>
                   <span className="block text-2xl font-bold">New</span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Recent Finds</h3>
+                  <h2 className="text-lg font-bold text-gray-900 mb-1">Recent Finds</h2>
                   <p className="text-sm text-gray-600 mb-3">
                     Check out the most recently turned in items.
                   </p>
@@ -139,19 +141,19 @@ export default function Home() {
             {/* Sidebar Block 2: How to Claim */}
             <div className="bg-mrhs-bg p-6 border-t-4 border-fbla-blue shadow-sm">
               <div className="flex gap-4">
-                <div className="bg-fbla-blue text-white p-3 text-center min-w-[70px] h-fit">
+                <div className="bg-fbla-blue text-white p-3 text-center min-w-[70px] h-fit" aria-hidden="true">
                   <span className="block text-xs uppercase font-bold text-blue-100">INFO</span>
                   <span className="block text-2xl font-bold">Help</span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">How to Claim</h3>
+                  <h2 className="text-lg font-bold text-gray-900 mb-1">How to Claim</h2>
                   <div className="text-sm text-gray-600 mb-3 space-y-1">
                     <div className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4" />
+                      <HelpCircle className="w-4 h-4" aria-hidden="true" />
                       <span>Identify your item</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4" />
+                      <HelpCircle className="w-4 h-4" aria-hidden="true" />
                       <span>Submit a claim request</span>
                     </div>
                   </div>
@@ -163,7 +165,7 @@ export default function Home() {
             </div>
             {/* Categories Quick Links */}
             <div className="bg-white p-6 border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Browse Categories</h3>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Browse Categories</h2>
               <div className="flex flex-col gap-2">
                 {CATEGORIES.map((cat) => (
                   <Link

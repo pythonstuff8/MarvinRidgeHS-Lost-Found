@@ -127,7 +127,7 @@ export default function ItemsPage() {
         <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-6 md:py-8">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-gray-200 pb-6">
                     <div>
@@ -138,14 +138,16 @@ export default function ItemsPage() {
                     <div className="flex flex-col sm:flex-row gap-3">
                         {/* Search Bar */}
                         <div className="relative">
+                            <label htmlFor="items-search" className="sr-only">Search items</label>
                             <input
+                                id="items-search"
                                 type="text"
                                 placeholder="Search items..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-10 pr-4 py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-1 focus:ring-fbla-blue outline-none w-full sm:w-64"
                             />
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" aria-hidden="true" />
                         </div>
 
                         {/* Filter Buttons */}
@@ -154,6 +156,7 @@ export default function ItemsPage() {
                                 <button
                                     key={type}
                                     onClick={() => setFilter(type)}
+                                    aria-pressed={filter === type}
                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === type
                                         ? "bg-white text-gray-900 shadow-sm"
                                         : "text-gray-500 hover:text-gray-700"
@@ -168,10 +171,10 @@ export default function ItemsPage() {
 
                 {/* AI Spell Check Notice */}
                 {correctedQuery && (
-                    <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-2 text-purple-700 text-sm">
-                        <Sparkles className="w-4 h-4" />
+                    <div role="status" aria-live="polite" className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-2 text-purple-700 text-sm">
+                        <Sparkles className="w-4 h-4" aria-hidden="true" />
                         <p>
-                            Showing results for <span className="font-bold">"{correctedQuery}"</span> instead of <span className="line-through opacity-70">"{search}"</span>
+                            Showing results for <span className="font-bold">&ldquo;{correctedQuery}&rdquo;</span> instead of <span className="line-through opacity-70">&ldquo;{search}&rdquo;</span>
                         </p>
                     </div>
                 )}

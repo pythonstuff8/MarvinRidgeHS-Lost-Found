@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertTriangle, CheckCircle, Info } from "lucide-react";
 
@@ -25,19 +25,79 @@ export function Dialog({
     onConfirm,
     type = "info",
 }: DialogProps) {
-    // Unlike native alerts, we don't block execution, so isOpen handles visibility
-    // But we need to ensure it's rendered at the root or has high Z-index
-    if (!isOpen) return null;
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const previousFocusRef = useRef<HTMLElement | null>(null);
+    const titleId = useId();
 
     const isConfirm = !!onConfirm;
     const effectiveCancelText = cancelText || (isConfirm ? "Cancel" : "Close");
 
+    // Focus trap: cycle Tab/Shift+Tab within the dialog
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose();
+                return;
+            }
+
+            if (e.key === "Tab" && dialogRef.current) {
+                const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable.length === 0) return;
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+        },
+        [onClose]
+    );
+
+    // Save focus on open, restore on close, add keyboard listener
+    useEffect(() => {
+        if (isOpen) {
+            previousFocusRef.current = document.activeElement as HTMLElement;
+            document.addEventListener("keydown", handleKeyDown);
+
+            // Focus the first focusable element inside the dialog
+            requestAnimationFrame(() => {
+                if (dialogRef.current) {
+                    const focusable = dialogRef.current.querySelector<HTMLElement>(
+                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                    );
+                    focusable?.focus();
+                }
+            });
+        }
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            if (!isOpen && previousFocusRef.current) {
+                previousFocusRef.current.focus();
+            }
+        };
+    }, [isOpen, handleKeyDown]);
+
+    if (!isOpen) return null;
+
     const getIcon = () => {
         switch (type) {
-            case "danger": return <AlertTriangle className="w-6 h-6 text-red-600" />;
-            case "warning": return <AlertTriangle className="w-6 h-6 text-yellow-600" />;
-            case "success": return <CheckCircle className="w-6 h-6 text-green-600" />;
-            default: return <Info className="w-6 h-6 text-blue-600" />;
+            case "danger": return <AlertTriangle className="w-6 h-6 text-red-600" aria-hidden="true" />;
+            case "warning": return <AlertTriangle className="w-6 h-6 text-yellow-600" aria-hidden="true" />;
+            case "success": return <CheckCircle className="w-6 h-6 text-green-600" aria-hidden="true" />;
+            default: return <Info className="w-6 h-6 text-blue-600" aria-hidden="true" />;
         }
     };
 
@@ -61,10 +121,15 @@ export function Dialog({
                         exit={{ opacity: 0 }}
                         onClick={onClose}
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        aria-hidden="true"
                     />
 
                     {/* Dialog Panel */}
                     <motion.div
+                        ref={dialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={titleId}
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -72,13 +137,13 @@ export function Dialog({
                     >
                         <div className="p-6">
                             <div className="flex items-start gap-4">
-                                <div className={`flex-shrink-0 p-2 rounded-full bg-gray-50`}>
+                                <div className="flex-shrink-0 p-2 rounded-full bg-gray-50" aria-hidden="true">
                                     {getIcon()}
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-gray-900 leading-6 mb-2">
+                                    <h2 id={titleId} className="text-lg font-bold text-gray-900 leading-6 mb-2">
                                         {title}
-                                    </h3>
+                                    </h2>
                                     {(description || children) && (
                                         <div className="text-sm text-gray-500">
                                             {description && <p>{description}</p>}
@@ -88,9 +153,10 @@ export function Dialog({
                                 </div>
                                 <button
                                     onClick={onClose}
+                                    aria-label="Close dialog"
                                     className="text-gray-400 hover:text-gray-500 transition-colors"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-5 h-5" aria-hidden="true" />
                                 </button>
                             </div>
 

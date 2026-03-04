@@ -15,7 +15,7 @@ export function Footer() {
                         <div className="text-sm space-y-1">
                             <p>2825 Crane Road</p>
                             <p>Waxhaw, NC 28173</p>
-                            <p className="font-bold underline cursor-pointer hover:text-fbla-blue">704-290-1520</p>
+                            <a href="tel:+17042901520" className="font-bold underline hover:text-fbla-blue">704-290-1520</a>
                         </div>
                     </div>
 
@@ -36,17 +36,17 @@ export function Footer() {
                     <div>
                         <h3 className="text-lg font-bold text-gray-900 mb-4">Stay Connected</h3>
                         <div className="flex space-x-3">
-                            <a href="https://www.facebook.com/MarvinRidgeHSNC/" target="_blank" rel="noopener noreferrer" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-fbla-blue">
-                                <Facebook className="w-5 h-5" />
+                            <a href="https://www.facebook.com/MarvinRidgeHSNC/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-fbla-blue">
+                                <Facebook className="w-5 h-5" aria-hidden="true" />
                             </a>
-                            <a href="https://www.instagram.com/marvinridgehsnc" target="_blank" rel="noopener noreferrer" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-pink-600">
-                                <Instagram className="w-5 h-5" />
+                            <a href="https://www.instagram.com/marvinridgehsnc" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-pink-600">
+                                <Instagram className="w-5 h-5" aria-hidden="true" />
                             </a>
-                            <a href="https://x.com/marvinridgehsnc" target="_blank" rel="noopener noreferrer" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-black">
-                                <Twitter className="w-5 h-5" />
+                            <a href="https://x.com/marvinridgehsnc" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-black">
+                                <Twitter className="w-5 h-5" aria-hidden="true" />
                             </a>
-                            <a href="https://www.youtube.com/user/MarvinRidgeHSNC" target="_blank" rel="noopener noreferrer" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-red-600">
-                                <Youtube className="w-5 h-5" />
+                            <a href="https://www.youtube.com/user/MarvinRidgeHSNC" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition-shadow text-gray-600 hover:text-red-600">
+                                <Youtube className="w-5 h-5" aria-hidden="true" />
                             </a>
                         </div>
                     </div>

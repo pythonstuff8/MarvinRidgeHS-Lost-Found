@@ -332,7 +332,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-6 md:py-8">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 border-b border-gray-200 pb-4 gap-4">
                     <h1 className="text-2xl md:text-3xl font-bold text-fbla-blue">
@@ -349,7 +349,7 @@ export default function Dashboard() {
                                     <p className="text-sm text-gray-500 font-bold">{stat.label}</p>
                                     <p className="text-3xl md:text-4xl font-bold mt-1 text-gray-900">{stat.value}</p>
                                 </div>
-                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center shadow-sm" aria-hidden="true">
                                     <LayoutDashboard className="w-6 h-6 md:w-7 md:h-7 text-fbla-blue" />
                                 </div>
                             </div>
@@ -359,26 +359,42 @@ export default function Dashboard() {
 
                 {/* Dashboard Tabs (Admin Only) - Scrollable on mobile */}
                 {role === "ADMIN" && (
-                    <div className="mb-6 md:mb-8 flex gap-4 border-b border-gray-200 pb-1 overflow-x-auto scrollbar-hide">
+                    <div role="tablist" aria-label="Dashboard sections" className="mb-6 md:mb-8 flex gap-4 border-b border-gray-200 pb-1 overflow-x-auto scrollbar-hide">
                         <button
+                            role="tab"
+                            id="tab-pending"
+                            aria-selected={activeTab === "pending"}
+                            aria-controls="tabpanel-content"
                             onClick={() => setActiveTab("pending")}
                             className={`pb-3 px-1 font-bold whitespace-nowrap transition-colors text-sm md:text-base ${activeTab === "pending" ? "text-fbla-orange border-b-2 border-fbla-orange" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             Pending Approvals
                         </button>
                         <button
+                            role="tab"
+                            id="tab-all"
+                            aria-selected={activeTab === "all"}
+                            aria-controls="tabpanel-content"
                             onClick={() => setActiveTab("all")}
                             className={`pb-3 px-1 font-bold whitespace-nowrap transition-colors text-sm md:text-base ${activeTab === "all" ? "text-fbla-orange border-b-2 border-fbla-orange" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             All Items
                         </button>
                         <button
+                            role="tab"
+                            id="tab-inquiries"
+                            aria-selected={activeTab === "inquiries"}
+                            aria-controls="tabpanel-content"
                             onClick={() => setActiveTab("inquiries")}
                             className={`pb-3 px-1 font-bold whitespace-nowrap transition-colors text-sm md:text-base ${activeTab === "inquiries" ? "text-fbla-orange border-b-2 border-fbla-orange" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             Inquiries ({inquiries.filter(i => i.status === "OPEN").length})
                         </button>
                         <button
+                            role="tab"
+                            id="tab-claims"
+                            aria-selected={activeTab === "claims"}
+                            aria-controls="tabpanel-content"
                             onClick={() => setActiveTab("claims")}
                             className={`pb-3 px-1 font-bold whitespace-nowrap transition-colors text-sm md:text-base ${activeTab === "claims" ? "text-fbla-orange border-b-2 border-fbla-orange" : "text-gray-500 hover:text-gray-900"}`}
                         >
@@ -387,7 +403,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                <section className="space-y-6">
+                <section id="tabpanel-content" role="tabpanel" aria-labelledby={`tab-${activeTab}`} className="space-y-6">
                     {role === "ADMIN" && activeTab === "claims" ? (
                         <div className="space-y-6">
                             {claims.length > 0 ? claims.map((claim) => {
@@ -514,7 +530,9 @@ export default function Dashboard() {
                                         </div>
                                     ) : (
                                         <div className="flex flex-col sm:flex-row gap-2">
+                                            <label htmlFor={`reply-${inq.id}`} className="sr-only">Reply to inquiry about {inq.itemTitle}</label>
                                             <input
+                                                id={`reply-${inq.id}`}
                                                 type="text"
                                                 placeholder="Type your reply..."
                                                 value={replyText[inq.id] || ""}
@@ -523,9 +541,10 @@ export default function Dashboard() {
                                             />
                                             <button
                                                 onClick={() => handleReply(inq.id)}
+                                                aria-label={`Send reply to ${inq.username}'s inquiry`}
                                                 className="px-4 py-2 bg-fbla-blue text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-800 shadow-sm"
                                             >
-                                                <Send className="w-4 h-4" /> Reply
+                                                <Send className="w-4 h-4" aria-hidden="true" /> Reply
                                             </button>
                                         </div>
                                     )}
@@ -538,10 +557,10 @@ export default function Dashboard() {
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="p-4 font-bold text-gray-600">Title</th>
-                                            <th className="p-4 font-bold text-gray-600">Status</th>
-                                            <th className="p-4 font-bold text-gray-600">Type</th>
-                                            <th className="p-4 font-bold text-gray-600">Actions</th>
+                                            <th scope="col" className="p-4 font-bold text-gray-600">Title</th>
+                                            <th scope="col" className="p-4 font-bold text-gray-600">Status</th>
+                                            <th scope="col" className="p-4 font-bold text-gray-600">Type</th>
+                                            <th scope="col" className="p-4 font-bold text-gray-600">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -560,12 +579,12 @@ export default function Dashboard() {
                                                 </td>
                                                 <td className="p-4 text-gray-600">{item.type}</td>
                                                 <td className="p-4 flex gap-2">
-                                                    <button onClick={() => handleDelete(item.id)} className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors" title="Delete">
-                                                        <Trash2 className="w-4 h-4" />
+                                                    <button onClick={() => handleDelete(item.id)} aria-label={`Delete ${item.title}`} className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
+                                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                                                     </button>
                                                     {item.status !== "APPROVED" && (
-                                                        <button onClick={() => handleStatus(item.id, "APPROVED")} className="p-2 hover:bg-green-50 text-green-500 rounded-lg transition-colors" title="Approve">
-                                                            <CheckCircle className="w-4 h-4" />
+                                                        <button onClick={() => handleStatus(item.id, "APPROVED")} aria-label={`Approve ${item.title}`} className="p-2 hover:bg-green-50 text-green-500 rounded-lg transition-colors">
+                                                            <CheckCircle className="w-4 h-4" aria-hidden="true" />
                                                         </button>
                                                     )}
                                                 </td>
@@ -595,9 +614,10 @@ export default function Dashboard() {
                                         </button>
                                         <button
                                             onClick={() => handleDelete(item.id)}
+                                            aria-label={`Delete ${item.title}`}
                                             className="py-2 px-3 bg-white text-gray-400 border border-gray-200 rounded-xl hover:bg-red-50 hover:text-red-500 transition-colors"
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                                         </button>
                                     </div>
                                 </div>

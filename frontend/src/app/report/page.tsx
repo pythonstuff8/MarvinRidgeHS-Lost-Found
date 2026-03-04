@@ -306,7 +306,7 @@ export default function ReportPage() {
         <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-6 md:py-12">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-6 md:py-12">
                 <div className="max-w-2xl mx-auto">
                     <AnimatePresence mode="wait">
                         {step === 1 ? (
@@ -323,8 +323,8 @@ export default function ReportPage() {
 
                                 {/* Text Moderation Result */}
                                 {moderationResult && !moderationResult.approved && (
-                                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                                        <ShieldAlert className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
+                                    <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                                        <ShieldAlert className="w-6 h-6 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
                                         <div>
                                             <p className="font-bold text-red-600">Content Not Allowed</p>
                                             <p className="text-sm text-red-500">{moderationResult.reason}</p>
@@ -334,8 +334,8 @@ export default function ReportPage() {
 
                                 {/* Image Moderation Result */}
                                 {imageModerationResult && !imageModerationResult.approved && (
-                                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                                        <ShieldAlert className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
+                                    <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                                        <ShieldAlert className="w-6 h-6 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
                                         <div>
                                             <p className="font-bold text-red-600">Image Not Allowed</p>
                                             <p className="text-sm text-red-500">{imageModerationResult.reason}</p>
@@ -364,8 +364,9 @@ export default function ReportPage() {
 
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700">Item Name</label>
+                                            <label htmlFor="report-title" className="text-sm font-bold text-gray-700">Item Name</label>
                                             <input
+                                                id="report-title"
                                                 required
                                                 value={formData.title}
                                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -374,8 +375,9 @@ export default function ReportPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700">Category</label>
+                                            <label htmlFor="report-category" className="text-sm font-bold text-gray-700">Category</label>
                                             <select
+                                                id="report-category"
                                                 required
                                                 value={formData.category}
                                                 className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 outline-none focus:border-fbla-blue focus:ring-1 focus:ring-fbla-blue transition-all"
@@ -393,7 +395,7 @@ export default function ReportPage() {
 
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <label className="text-sm font-bold text-gray-700">Description</label>
+                                            <label htmlFor="report-description" className="text-sm font-bold text-gray-700">Description</label>
                                             {formData.image && (
                                                 <button
                                                     type="button"
@@ -401,12 +403,13 @@ export default function ReportPage() {
                                                     disabled={isDescribing}
                                                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-fbla-blue text-white text-xs font-bold hover:bg-blue-800 disabled:opacity-50 transition-colors"
                                                 >
-                                                    {isDescribing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                                                    {isDescribing ? <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" /> : <Sparkles className="w-3 h-3" aria-hidden="true" />}
                                                     AI Describe
                                                 </button>
                                             )}
                                         </div>
                                         <textarea
+                                            id="report-description"
                                             required
                                             rows={3}
                                             value={formData.description}
@@ -418,8 +421,9 @@ export default function ReportPage() {
 
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700">Date {formData.type === "LOST" ? "Lost" : "Found"}</label>
+                                            <label htmlFor="report-date" className="text-sm font-bold text-gray-700">Date {formData.type === "LOST" ? "Lost" : "Found"}</label>
                                             <input
+                                                id="report-date"
                                                 type="date"
                                                 required
                                                 value={formData.date}
@@ -428,8 +432,9 @@ export default function ReportPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700">Location</label>
+                                            <label htmlFor="report-location" className="text-sm font-bold text-gray-700">Location</label>
                                             <input
+                                                id="report-location"
                                                 required
                                                 value={formData.location}
                                                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -440,15 +445,15 @@ export default function ReportPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Upload Image</label>
+                                        <label htmlFor="report-image" className="text-sm font-bold text-gray-700">Upload Image</label>
                                         <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-fbla-blue transition-colors cursor-pointer group text-center bg-gray-50">
-                                            <input type="file" accept="image/*,.heic,.heif" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                                            <input id="report-image" type="file" accept="image/*,.heic,.heif" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                                             {formData.image ? (
                                                 <div className="relative h-40 w-full">
                                                     <Image src={formData.image} alt="Preview" fill className="object-contain rounded-lg" />
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-fbla-blue transition-colors">
+                                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-fbla-blue transition-colors" aria-hidden="true">
                                                     <Camera className="w-8 h-8 mb-2" />
                                                     <span>Click to upload photo</span>
                                                 </div>
@@ -459,7 +464,7 @@ export default function ReportPage() {
                                     {/* High Value Toggle */}
                                     <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-yellow-100 rounded-lg">
+                                            <div className="p-2 bg-yellow-100 rounded-lg" aria-hidden="true">
                                                 <ShieldAlert className="w-5 h-5 text-yellow-700" />
                                             </div>
                                             <div>
@@ -469,6 +474,9 @@ export default function ReportPage() {
                                         </div>
                                         <button
                                             type="button"
+                                            role="switch"
+                                            aria-checked={formData.highValue}
+                                            aria-label="Mark as high value item"
                                             onClick={() => setFormData(prev => ({ ...prev, highValue: !prev.highValue }))}
                                             className={`relative w-12 h-6 rounded-full transition-colors ${formData.highValue ? "bg-yellow-500" : "bg-gray-300"}`}
                                         >
@@ -478,7 +486,7 @@ export default function ReportPage() {
 
                                     {/* AI Safety Badge */}
                                     <div className="flex items-center gap-2 text-sm text-gray-500 bg-green-50 px-3 py-2 rounded-lg border border-green-100">
-                                        <ShieldCheck className="w-4 h-4 text-green-600" />
+                                        <ShieldCheck className="w-4 h-4 text-green-600" aria-hidden="true" />
                                         <span className="text-green-700 font-medium">Protected by AI text & image moderation</span>
                                     </div>
 
@@ -498,7 +506,7 @@ export default function ReportPage() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="text-center py-8 md:py-12 space-y-6 bg-white p-4 md:p-8 rounded-3xl border border-gray-200 shadow-xl"
                             >
-                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
+                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600" aria-hidden="true">
                                     <CheckCircle className="w-10 h-10" />
                                 </div>
 
