@@ -27,8 +27,6 @@ export const metadata: Metadata = {
   viewport: {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
     viewportFit: "cover",
   },
   themeColor: "#003058",
@@ -51,6 +49,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <AuthProvider>
           {children}
         </AuthProvider>

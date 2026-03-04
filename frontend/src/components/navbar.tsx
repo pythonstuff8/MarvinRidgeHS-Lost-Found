@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Menu, X, Bell, LogOut, MessageSquare, ChevronRight, Search, Sun, Moon, CheckCircle } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -22,12 +22,8 @@ type Notification = {
 
 /**
  * Navbar Component
- * 
+ *
  * Provides global navigation, user authentication status, and notification management.
- * Features:
- * - Responsive design with mobile menu overlay
- * - Real-time notification system using Firebase
- * - Role-based navigation links
  */
 export function Navbar() {
     // UI state for menus
@@ -67,7 +63,6 @@ export function Navbar() {
         setIsNotifOpen(nextState);
 
         if (nextState && unreadCount > 0) {
-            // Mark all as read
             const updates: { [key: string]: any } = {};
             notifications.forEach(n => {
                 if (n.read === false) {
@@ -89,51 +84,66 @@ export function Navbar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Escape key closes open menus
+    const handleEscape = useCallback((e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+            if (isNotifOpen) setIsNotifOpen(false);
+            if (isOpen) setIsOpen(false);
+        }
+    }, [isNotifOpen, isOpen]);
+
+    useEffect(() => {
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [handleEscape]);
+
     return (
-        <div className="flex flex-col w-full font-sans sticky top-0 z-50 bg-white pt-safe">
+        <header className="flex flex-col w-full font-sans sticky top-0 z-50 bg-white pt-safe">
             {/* Top Header Section */}
             <div className="bg-white border-b border-gray-200">
                 <div className="container mx-auto px-4 py-3 md:py-6 flex items-center justify-between gap-2 md:gap-4">
                     {/* Logo and School Info */}
                     <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-                        <Link href="/">
-                            <img src="/MRHS_TRANSP.png" alt="MRHS" className="h-12 w-auto md:h-16 object-contain" />
+                        <Link href="/" aria-label="Marvin Ridge High School home page">
+                            <img src="/MRHS_TRANSP.png" alt="Marvin Ridge High School logo" className="h-12 w-auto md:h-16 object-contain" />
                         </Link>
                         <div className="hidden md:block">
-                            <h1 className="text-2xl md:text-3xl font-normal text-gray-900 leading-tight">
+                            <p className="text-2xl md:text-3xl font-normal text-gray-900 leading-tight">
                                 Marvin Ridge High School
-                            </h1>
+                            </p>
                             <p className="text-sm italic text-gray-600">Principal: Matt Lasher</p>
                         </div>
                         {/* Mobile Title - Simplified */}
                         <div className="block md:hidden truncate">
-                            <h1 className="text-lg font-bold text-gray-900 leading-tight">
+                            <p className="text-lg font-bold text-gray-900 leading-tight">
                                 MRHS Lost & Found
-                            </h1>
+                            </p>
                         </div>
                     </div>
 
                     {/* Quick Access / Utilities */}
                     <div className="flex items-center gap-3 md:gap-6 text-sm font-medium text-fbla-blue">
 
-
-                        {/* Auth & Notifications Area styled plainly */}
+                        {/* Auth & Notifications Area */}
                         <div className="flex items-center gap-2 md:gap-3">
                             <div className="relative" ref={dropdownRef}>
                                 <button
                                     onClick={handleToggleNotif}
+                                    aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+                                    aria-expanded={isNotifOpen}
+                                    aria-haspopup="true"
                                     className="relative p-1.5 md:p-1 text-gray-600 hover:text-fbla-blue transition-colors"
                                 >
-                                    <Bell className="w-5 h-5 md:w-5 md:h-5" />
+                                    <Bell className="w-5 h-5 md:w-5 md:h-5" aria-hidden="true" />
                                     {unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full min-w-[16px] h-[16px] flex items-center justify-center">
+                                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full min-w-[16px] h-[16px] flex items-center justify-center" aria-hidden="true">
                                             {unreadCount}
                                         </span>
                                     )}
                                 </button>
                                 {/* Notification Dropdown */}
                                 {isNotifOpen && (
-                                    <div className="absolute right-0 mt-2 w-72 md:w-80 bg-white border border-gray-200 rounded-md shadow-xl z-50 overflow-hidden">
+                                    <div className="absolute right-0 mt-2 w-72 md:w-80 bg-white border border-gray-200 rounded-md shadow-xl z-50 overflow-hidden" role="menu" aria-label="Notifications">
                                         <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                                             <h3 className="font-bold text-gray-700">Notifications</h3>
                                             <Link href="/notifications" onClick={() => setIsNotifOpen(false)} className="text-xs text-fbla-blue hover:underline">
@@ -148,9 +158,10 @@ export function Navbar() {
                                                         href="/notifications"
                                                         onClick={() => setIsNotifOpen(false)}
                                                         className="block p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                                                        role="menuitem"
                                                     >
                                                         <div className="flex gap-3">
-                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.type === "CLAIM_APPROVED" ? "bg-green-100 text-green-600" : notif.type === "CLAIM_REJECTED" ? "bg-red-100 text-red-600" : notif.type === "MATCH_FOUND" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"}`}>
+                                                            <div className={`p-2 rounded-full h-fit flex-shrink-0 ${notif.type === "CLAIM_APPROVED" ? "bg-green-100 text-green-600" : notif.type === "CLAIM_REJECTED" ? "bg-red-100 text-red-600" : notif.type === "MATCH_FOUND" ? "bg-orange-100 text-orange-600" : "bg-blue-100 text-blue-600"}`} aria-hidden="true">
                                                                 {notif.type === "CLAIM_APPROVED" ? <CheckCircle className="w-4 h-4" /> : notif.type === "CLAIM_REJECTED" ? <Bell className="w-4 h-4" /> : notif.type === "MATCH_FOUND" ? <Search className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
@@ -194,14 +205,18 @@ export function Navbar() {
                             </div>
 
 
-                            <Search className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 hidden md:block" />
+                            <Link href="/items" className="hidden md:block" aria-label="Search items">
+                                <Search className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" aria-hidden="true" />
+                            </Link>
 
-                            {/* Mobile Menu Button - Moved to end */}
+                            {/* Mobile Menu Button */}
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
+                                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                                aria-expanded={isOpen}
                                 className="p-1.5 ml-1 text-gray-700 md:hidden"
                             >
-                                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                {isOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
                             </button>
                         </div>
                     </div>
@@ -209,34 +224,34 @@ export function Navbar() {
             </div>
 
             {/* Desktop Navigation Strip */}
-            <div className="bg-fbla-cream border-b border-gray-200 hidden md:block">
+            <nav aria-label="Main navigation" className="bg-fbla-cream border-b border-gray-200 hidden md:block">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-between items-center h-12">
                         <div className="flex space-x-8 lg:space-x-12 mx-auto w-full justify-center">
                             <Link href="/" className="text-gray-700 font-bold hover:text-fbla-blue transition-colors px-2 relative group">
                                 Home
-                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full"></span>
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full" aria-hidden="true"></span>
                             </Link>
                             <Link href="/items" className="text-gray-700 font-bold hover:text-fbla-blue transition-colors px-2 relative group">
                                 Browse Items
-                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full"></span>
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full" aria-hidden="true"></span>
                             </Link>
                             <Link href="/report" className="text-gray-700 font-bold hover:text-fbla-blue transition-colors px-2 relative group">
                                 Report Item
-                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full"></span>
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full" aria-hidden="true"></span>
                             </Link>
                             <Link href="/dashboard" className="text-gray-700 font-bold hover:text-fbla-blue transition-colors px-2 relative group">
                                 {role === "ADMIN" ? "Admin Panel" : "Dashboard"}
-                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full"></span>
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-fbla-blue transition-all group-hover:w-full" aria-hidden="true"></span>
                             </Link>
                         </div>
                     </div>
                 </div>
-            </div>
+            </nav>
 
             {/* Mobile Menu Overlay */}
             {isOpen && (
-                <div className="md:hidden bg-white border-b border-gray-200 absolute w-full left-0 top-full shadow-lg">
+                <nav aria-label="Mobile navigation" className="md:hidden bg-white border-b border-gray-200 absolute w-full left-0 top-full shadow-lg">
                     <div className="flex flex-col p-4 space-y-4">
                         <Link href="/" onClick={() => setIsOpen(false)} className="text-gray-800 font-medium py-2 border-b border-gray-100">Home</Link>
                         <Link href="/items" onClick={() => setIsOpen(false)} className="text-gray-800 font-medium py-2 border-b border-gray-100">Browse Items</Link>
@@ -264,8 +279,8 @@ export function Navbar() {
                             )}
                         </div>
                     </div>
-                </div>
+                </nav>
             )}
-        </div>
+        </header>
     );
 }

@@ -114,9 +114,9 @@ export default function ItemDetail() {
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-8">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-8">
                 <Link href="/items" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
                     Back to Gallery
                 </Link>
 
@@ -147,7 +147,7 @@ export default function ItemDetail() {
                                 </>
                             ) : (
                                 <div className="flex items-center justify-center h-full text-gray-400">
-                                    <Tag className="w-24 h-24 opacity-20" />
+                                    <Tag className="w-24 h-24 opacity-20" aria-hidden="true" />
                                 </div>
                             )}
                         </div>
@@ -165,7 +165,7 @@ export default function ItemDetail() {
                             </span>
                             {item.highValue && (
                                 <span className="px-3 py-1.5 rounded text-sm font-bold uppercase tracking-wide bg-yellow-400 text-yellow-900 flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
                                     High Value
@@ -184,7 +184,7 @@ export default function ItemDetail() {
                         {/* Date & Location Notice */}
                         <div className="py-4 border-t border-b border-gray-200 space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
+                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200" aria-hidden="true">
                                     <Calendar className="w-5 h-5 text-fbla-blue" />
                                 </div>
                                 <div>
@@ -193,7 +193,7 @@ export default function ItemDetail() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-fbla-orange/10 flex items-center justify-center border border-fbla-orange/20">
+                                <div className="w-10 h-10 rounded-lg bg-fbla-orange/10 flex items-center justify-center border border-fbla-orange/20" aria-hidden="true">
                                     <MapPin className="w-5 h-5 text-fbla-orange" />
                                 </div>
                                 <div>
@@ -211,10 +211,8 @@ export default function ItemDetail() {
                         <div className="flex flex-col sm:flex-row gap-4 pt-2">
                             {item.type === "FOUND" && (
                                 item.highValue ? (
-                                    <Link href={`/items/${item.id}/claim`} className="flex-1">
-                                        <button className="w-full py-3 bg-fbla-orange text-white font-bold rounded hover:bg-orange-600 transition-colors">
-                                            Claim this Item
-                                        </button>
+                                    <Link href={`/items/${item.id}/claim`} className="flex-1 block py-3 bg-fbla-orange text-white font-bold rounded hover:bg-orange-600 transition-colors text-center">
+                                        Claim this Item
                                     </Link>
                                 ) : (
                                     <button
@@ -226,10 +224,8 @@ export default function ItemDetail() {
                                     </button>
                                 )
                             )}
-                            <Link href={`/items/${item.id}/inquiry`} className="flex-1">
-                                <button className="w-full py-3 bg-fbla-blue text-white font-bold rounded hover:bg-blue-800 transition-colors">
-                                    Ask Admin / Inquiry
-                                </button>
+                            <Link href={`/items/${item.id}/inquiry`} className="flex-1 block py-3 bg-fbla-blue text-white font-bold rounded hover:bg-blue-800 transition-colors text-center">
+                                Ask Admin / Inquiry
                             </Link>
                         </div>
                     </div>
@@ -254,7 +250,7 @@ export default function ItemDetail() {
                                             <Image src={m.imageUrl} alt={m.title} fill className="object-cover" />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-gray-300">
-                                                <Tag className="w-8 h-8 opacity-50" />
+                                                <Tag className="w-8 h-8 opacity-50" aria-hidden="true" />
                                             </div>
                                         )}
                                         <span className={`absolute top-2 right-2 px-2 py-0.5 rounded text-xs font-bold uppercase ${m.type === "LOST" ? "bg-fbla-orange text-white" : "bg-fbla-blue text-white"}`}>

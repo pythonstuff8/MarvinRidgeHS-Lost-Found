@@ -10,6 +10,7 @@
   --color-fbla-cream: #F7F9F9;
   --color-mrhs-bg: #F5F5F5;
   /* Light gray background for secondary areas */
+  --focus-ring: #003058;
 }
 
 @theme inline {
@@ -38,11 +39,6 @@ body {
   overscroll-behavior-y: contain;
   /* Smooth scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-}
-
-/* iOS tap highlight removal */
-* {
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* Better touch targets for mobile */
@@ -78,5 +74,63 @@ input, select, textarea {
 
   button:active, a:active {
     transform: scale(0.97);
+  }
+}
+
+/* ========== Accessibility ========== */
+
+/* Focus-visible outline for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+  padding: 1rem 1.5rem;
+  background: var(--color-fbla-blue);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+}
+
+.skip-to-content:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -80,12 +80,14 @@ export default function InquiryPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-            <main className="flex-1 container mx-auto px-4 py-8 max-w-lg">
-                <h1 className="text-2xl font-bold mb-4">Ask about "{itemTitle}"</h1>
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-8 max-w-lg">
+                <h1 className="text-2xl font-bold mb-4">Ask about &ldquo;{itemTitle}&rdquo;</h1>
                 <p className="text-muted-foreground mb-6">Send a message to the admin regarding this item. You will be notified when they reply.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <label htmlFor="inquiry-message" className="sr-only">Your message to the admin</label>
                     <textarea
+                        id="inquiry-message"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         required
@@ -97,7 +99,7 @@ export default function InquiryPage() {
                         disabled={isSubmitting}
                         className="w-full py-3 rounded-xl bg-fbla-blue text-white font-bold flex items-center justify-center gap-2 hover:bg-fbla-blue/90"
                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : <> <Send className="w-4 h-4" /> Send Inquiry </>}
+                        {isSubmitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <> <Send className="w-4 h-4" aria-hidden="true" /> Send Inquiry </>}
                     </button>
                 </form>
             </main>

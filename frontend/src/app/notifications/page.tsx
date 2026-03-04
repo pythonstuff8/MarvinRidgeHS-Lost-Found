@@ -44,13 +44,13 @@ export default function NotificationsPage() {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case "CLAIM_APPROVED": return <CheckCircle className="w-5 h-5 text-green-600" />;
-            case "CLAIM_REJECTED": return <XCircle className="w-5 h-5 text-red-500" />;
-            case "ITEM_APPROVED": return <CheckCircle className="w-5 h-5 text-green-600" />;
-            case "ITEM_REJECTED": return <XCircle className="w-5 h-5 text-red-500" />;
-            case "INQUIRY_REPLY": return <MessageSquare className="w-5 h-5 text-fbla-blue" />;
-            case "MATCH_FOUND": return <Search className="w-5 h-5 text-fbla-orange" />;
-            default: return <Bell className="w-5 h-5 text-gray-500" />;
+            case "CLAIM_APPROVED": return <CheckCircle className="w-5 h-5 text-green-600" aria-hidden="true" />;
+            case "CLAIM_REJECTED": return <XCircle className="w-5 h-5 text-red-500" aria-hidden="true" />;
+            case "ITEM_APPROVED": return <CheckCircle className="w-5 h-5 text-green-600" aria-hidden="true" />;
+            case "ITEM_REJECTED": return <XCircle className="w-5 h-5 text-red-500" aria-hidden="true" />;
+            case "INQUIRY_REPLY": return <MessageSquare className="w-5 h-5 text-fbla-blue" aria-hidden="true" />;
+            case "MATCH_FOUND": return <Search className="w-5 h-5 text-fbla-orange" aria-hidden="true" />;
+            default: return <Bell className="w-5 h-5 text-gray-500" aria-hidden="true" />;
         }
     };
 
@@ -65,9 +65,9 @@ export default function NotificationsPage() {
         <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
+            <main id="main-content" className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
                 <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-fbla-blue">
-                    <Bell className="w-6 h-6 text-fbla-orange" />
+                    <Bell className="w-6 h-6 text-fbla-orange" aria-hidden="true" />
                     Notifications
                 </h1>
 
@@ -88,13 +88,13 @@ export default function NotificationsPage() {
                                     {notif.type === "CLAIM_APPROVED" && notif.pickupCode && (
                                         <div className="bg-green-50 border border-green-200 p-4 rounded-xl space-y-4">
                                             <div className="flex items-center gap-2">
-                                                <Key className="w-4 h-4 text-green-700" />
+                                                <Key className="w-4 h-4 text-green-700" aria-hidden="true" />
                                                 <p className="text-sm font-bold text-green-800">Pickup Verification</p>
                                             </div>
 
                                             {/* QR Code */}
                                             <div className="flex justify-center py-2">
-                                                <div className="bg-white p-3 rounded-xl shadow-sm border border-green-100">
+                                                <div role="img" aria-label={`QR code for pickup verification, code: ${notif.pickupCode}`} className="bg-white p-3 rounded-xl shadow-sm border border-green-100">
                                                     <QRCodeSVG
                                                         value={JSON.stringify({
                                                             code: notif.pickupCode,
@@ -115,7 +115,7 @@ export default function NotificationsPage() {
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <MapPin className="w-4 h-4 text-green-700" />
+                                                <MapPin className="w-4 h-4 text-green-700" aria-hidden="true" />
                                                 <p className="text-sm text-green-800"><span className="font-bold">Pickup Location:</span> {notif.pickupLocation}</p>
                                             </div>
                                             <p className="text-xs text-green-600">Show this QR code or text code to the administrator when picking up your item.</p>

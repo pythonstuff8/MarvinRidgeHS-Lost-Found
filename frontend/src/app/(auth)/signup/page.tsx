@@ -32,7 +32,7 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <main id="main-content" className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-200">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-fbla-orange mb-2">Create Account</h1>
@@ -40,30 +40,36 @@ export default function SignupPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && <div className="p-3 bg-red-50 text-red-500 text-sm rounded-lg text-center border border-red-200">{error}</div>}
+                    {error && <div role="alert" className="p-3 bg-red-50 text-red-500 text-sm rounded-lg text-center border border-red-200">{error}</div>}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Username</label>
+                        <label htmlFor="signup-username" className="text-sm font-medium text-gray-700">Username</label>
                         <input
+                            id="signup-username"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            autoComplete="username"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-blue/20 outline-none transition-all"
                             placeholder="Choose a username"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <label htmlFor="signup-password" className="text-sm font-medium text-gray-700">Password</label>
                         <input
+                            id="signup-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             minLength={6}
+                            autoComplete="new-password"
+                            aria-describedby="password-hint"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-blue/20 outline-none transition-all"
                             placeholder="Choose a password (min 6 chars)"
                         />
+                        <p id="password-hint" className="text-xs text-gray-500">Must be at least 6 characters long.</p>
                     </div>
 
                     <button
@@ -71,7 +77,7 @@ export default function SignupPage() {
                         disabled={isSubmitting}
                         className="w-full py-3 rounded-xl bg-fbla-orange text-white font-bold hover:bg-orange-600 transition-all flex items-center justify-center shadow-lg hover:shadow-xl"
                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : "Sign Up"}
+                        {isSubmitting ? <><Loader2 className="animate-spin" aria-hidden="true" /><span className="sr-only">Creating account...</span></> : "Sign Up"}
                     </button>
                 </form>
 
@@ -82,6 +88,6 @@ export default function SignupPage() {
                     </Link>
                 </p>
             </div>
-        </div>
+        </main>
     );
 }

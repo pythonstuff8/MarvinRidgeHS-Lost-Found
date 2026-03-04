@@ -26,7 +26,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+        <main id="main-content" className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
             <div className="w-full max-w-md space-y-8 bg-white p-6 md:p-10 rounded-3xl shadow-xl border border-gray-200">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-fbla-blue mb-2">Welcome Back</h1>
@@ -34,26 +34,30 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && <div className="p-3 bg-red-50 text-red-500 text-sm rounded-lg text-center border border-red-200">{error}</div>}
+                    {error && <div role="alert" className="p-3 bg-red-50 text-red-500 text-sm rounded-lg text-center border border-red-200">{error}</div>}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Username</label>
+                        <label htmlFor="login-username" className="text-sm font-medium text-gray-700">Username</label>
                         <input
+                            id="login-username"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            autoComplete="username"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-blue/20 outline-none transition-all"
                             placeholder="Enter your username"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <label htmlFor="login-password" className="text-sm font-medium text-gray-700">Password</label>
                         <input
+                            id="login-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            autoComplete="current-password"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-fbla-blue/20 outline-none transition-all"
                             placeholder="Enter your password"
                         />
@@ -64,7 +68,7 @@ export default function LoginPage() {
                         disabled={isSubmitting}
                         className="w-full py-3 rounded-xl bg-fbla-blue text-white font-bold hover:bg-blue-800 transition-all flex items-center justify-center"
                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : "Sign In"}
+                        {isSubmitting ? <><Loader2 className="animate-spin" aria-hidden="true" /><span className="sr-only">Signing in...</span></> : "Sign In"}
                     </button>
                 </form>
 
@@ -75,6 +79,6 @@ export default function LoginPage() {
                     </Link>
                 </p>
             </div>
-        </div>
+        </main>
     );
 }
