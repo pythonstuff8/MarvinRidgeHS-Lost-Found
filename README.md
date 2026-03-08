@@ -41,42 +41,6 @@ This application gives students a clean, searchable interface to report and find
 
 ---
 
-## Tech Stack
-
-| Layer          | Technology                                                     |
-|----------------|----------------------------------------------------------------|
-| Frontend       | Next.js, React, TypeScript, Tailwind CSS, Framer Motion       |
-| Backend        | FastAPI (Python)                                               |
-| Database       | Firebase Realtime Database                                     |
-| Authentication | Firebase Auth                                                  |
-| AI / ML        | Groq (Llama 3.1, Llama 4 Scout), OpenAI (GPT-4o-mini)        |
-| Image Storage  | Cloudinary                                                     |
-
----
-
-## Project Structure
-
-```
-backend/
-  main.py              API server entry point
-  ai_config.py         AI feature flags and model configuration
-  create_admin.py      Script to create administrator accounts
-  seed_items.py        Script to populate the database with sample data
-  requirements.txt     Python dependencies
-  .env.example         Template for environment variables
-
-frontend/
-  src/
-    app/               Next.js pages and routes
-    components/        Reusable UI components (navbar, item cards, dialogs, chatbot)
-    context/           React context providers (authentication)
-    lib/               Firebase client config, utilities
-  public/              Static assets
-  package.json         Node.js dependencies
-```
-
----
-
 ## How It Works
 
 1. A student creates an account with a username and password. The system handles authentication through Firebase behind the scenes.
@@ -98,7 +62,7 @@ frontend/
 - Python 3.10 or later
 - Node.js 18 or later
 - A Firebase project with Realtime Database and Email/Password Authentication enabled
-- API keys for Groq, OpenAI, and Cloudinary
+- API keys for OpenAI, and Cloudinary
 
 ### Backend
 
