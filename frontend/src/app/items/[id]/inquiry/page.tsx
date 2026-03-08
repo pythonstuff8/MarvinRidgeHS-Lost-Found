@@ -1,3 +1,14 @@
+/**
+ * Inquiry Page
+ * ────────────
+ * Allows any logged-in user to send a message to the admin about a specific item.
+ * The inquiry is stored in Firebase under /inquiries and appears on the admin
+ * dashboard's "Inquiries" tab, where the admin can type a reply. The user is
+ * then notified of the admin's response via the notification system.
+ *
+ * Use cases: "Is this item still available?", "Can I pick it up tomorrow?",
+ *            "I think this might be mine but I'm not sure", etc.
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";

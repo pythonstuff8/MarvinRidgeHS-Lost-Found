@@ -1,3 +1,22 @@
+/**
+ * Report Item Page
+ * ────────────────
+ * Allows users to report a lost or found item. This is the most feature-rich
+ * form in the app, with a multi-step AI pipeline that runs on submission:
+ *
+ *   Step 1: AI TEXT MODERATION — Screens the title/description for inappropriate content
+ *   Step 2: IMAGE UPLOAD — Uploads the photo to Cloudinary via the backend
+ *   Step 3: AI IMAGE MODERATION — Screens the uploaded photo for inappropriate images
+ *   Step 4: FIREBASE WRITE — Saves the item to the database with status "PENDING"
+ *   Step 5: AI VALUE EVALUATION — Determines if the item is high-value ($50+)
+ *   Step 6: MATCH FINDING — Searches for opposite-type items in the same category
+ *
+ * Additional features:
+ *   - "AI Describe" button: Uses vision AI to auto-generate a description from the photo
+ *   - HEIC/HEIF support: iPhone photos are converted to JPEG before upload
+ *   - High-value toggle: Users can manually flag expensive items
+ *   - Success screen: Shows potential matches after submission
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";
@@ -57,6 +76,7 @@ export default function ReportPage() {
         if (!loading && !user) router.push("/login");
     }, [user, loading, router]);
 
+    /** Uploads a base64 image to Cloudinary via the backend and returns the CDN URL */
     const uploadImage = async (imageBase64: string): Promise<string | null> => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-image`, {
@@ -73,6 +93,8 @@ export default function ReportPage() {
         }
     };
 
+    /** Sends the item's text (title, description, category) to the AI moderation endpoint.
+     *  Returns true if content is approved, false if rejected. Fails open (allows) on error. */
     const moderateContent = async (): Promise<boolean> => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/moderate-content`, {
@@ -101,6 +123,8 @@ export default function ReportPage() {
         }
     };
 
+    /** Sends the uploaded image URL to the AI image moderation endpoint.
+     *  Returns true if image is school-appropriate, false if rejected. */
     const moderateImage = async (imageUrl: string): Promise<boolean> => {
         try {
             setIsModeratingImage(true);
@@ -129,6 +153,11 @@ export default function ReportPage() {
         }
     };
 
+    /**
+     * handleSubmit — Main submission handler. Runs the full AI pipeline:
+     * 1. AI text moderation → 2. Image upload → 3. AI image moderation →
+     * 4. Firebase write → 5. AI value evaluation → 6. Match finding
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -241,6 +270,7 @@ export default function ReportPage() {
         }
     };
 
+    /** Handles image file selection: converts any format (including HEIC) to JPEG */
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -253,6 +283,11 @@ export default function ReportPage() {
         }
     };
 
+    /**
+     * handleAIDescribe — Sends the uploaded photo to the backend's vision AI endpoint.
+     * The AI analyzes the image and generates a description (color, brand, condition).
+     * This auto-fills the description field, saving the user time.
+     */
     const handleAIDescribe = async () => {
         if (!formData.image) return;
         setIsDescribing(true);

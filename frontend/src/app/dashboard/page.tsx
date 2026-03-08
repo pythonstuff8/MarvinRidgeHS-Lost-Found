@@ -1,3 +1,29 @@
+/**
+ * Dashboard Page
+ * ──────────────
+ * The central management hub with role-based views:
+ *
+ * FOR REGULAR USERS:
+ *   - Shows the items they have personally reported (My Items).
+ *
+ * FOR ADMINS:
+ *   - Statistics overview (pending approvals count, total items)
+ *   - FOUR TABS:
+ *     1. Pending Approvals — Review and approve/reject new item submissions
+ *     2. All Items — Table view of every item with quick actions
+ *     3. Inquiries — User messages about items; admin can type replies
+ *     4. Claims — Side-by-side comparison of claimant's answers vs actual
+ *        item data for ownership verification (approve/reject)
+ *
+ *   - AUTO-MATCHING: When an item is approved, the system searches for
+ *     opposite-type items in the same category and notifies their owners.
+ *   - AI VALUE CHECK: When approving items, the AI evaluates if the item
+ *     is high-value ($50+) and auto-upgrades it for extra security.
+ *   - NOTIFICATIONS: Admin actions (approve, reject, reply) trigger
+ *     real-time notifications to the affected users.
+ *   - PICKUP CODES: When a claim is approved, a random 6-character pickup
+ *     code is generated and sent to the claimant via notification + QR code.
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";
@@ -10,7 +36,7 @@ import { ref, remove, update, onValue, push, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { Dialog } from "@/components/dialog";
 
-// Inquiry Type Definition: Represents a message from a user about an item
+// Inquiry Type: A message from a user to the admin about a specific item
 type Inquiry = {
     id: string;
     userId: string;

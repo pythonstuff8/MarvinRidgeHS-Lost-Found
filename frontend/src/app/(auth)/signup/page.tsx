@@ -1,3 +1,12 @@
+/**
+ * Signup Page
+ * ───────────
+ * Account creation form. Users pick a username and password (min 6 characters).
+ * Internally, the username is mapped to "username@lf.app" for Firebase Auth.
+ * A user profile is created in Firebase Realtime Database with role "USER".
+ * Admin role must be assigned manually in the database.
+ * On success, the user is redirected to the home page.
+ */
 "use client";
 
 import { useState } from "react";

@@ -1,3 +1,16 @@
+/**
+ * ItemCard Component
+ * ──────────────────
+ * Reusable card that displays a single lost/found item in a grid layout.
+ * Used on the Browse Items page, Dashboard, and Pending Approvals.
+ *
+ * Features:
+ *   - Displays item image, title, category, date, and LOST/FOUND badge
+ *   - High-value items show a "High Value" badge and blurred images (security)
+ *   - Admins see Approve/Reject buttons for pending items
+ *   - Regular users see a "View Details" link
+ *   - Animated with Framer Motion (fade-in and hover lift effect)
+ */
 "use client";
 
 import { motion } from "framer-motion";
@@ -11,18 +24,22 @@ import { db } from "@/lib/firebase";
 import { useState } from "react";
 import { Dialog } from "@/components/dialog";
 
+/**
+ * Item Type Definition — represents a lost or found item in the database.
+ * This type is exported and used across many pages (Browse, Detail, Dashboard).
+ */
 export type Item = {
-    id: string;
-    title: string;
-    description: string;
-    type: "LOST" | "FOUND";
-    category: string;
-    location: string;
-    date: string;
-    imageUrl?: string;
+    id: string;                          // Firebase unique key
+    title: string;                       // Item name (e.g., "Blue North Face Backpack")
+    description: string;                 // Detailed description of the item
+    type: "LOST" | "FOUND";             // Whether item was lost or found
+    category: string;                    // Category (Electronics, Clothing, Books, etc.)
+    location: string;                    // Where the item was lost/found
+    date: string;                        // Date it was lost/found
+    imageUrl?: string;                   // Cloudinary image URL (optional)
     status: "OPEN" | "RESOLVED" | "PENDING" | "APPROVED" | "REJECTED";
-    owner?: string;
-    highValue?: boolean;
+    owner?: string;                      // Firebase UID of the user who reported it
+    highValue?: boolean;                 // True if item is worth $50+ (extra security)
 };
 
 export function ItemCard({ item, hideActions, isAdmin }: { item: Item; hideActions?: boolean; isAdmin?: boolean }) {

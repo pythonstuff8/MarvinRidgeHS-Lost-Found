@@ -1,3 +1,16 @@
+/**
+ * Dialog Component
+ * ────────────────
+ * A fully accessible modal dialog used throughout the app for confirmations,
+ * alerts, and success messages. Implements WAI-ARIA best practices:
+ *   - Focus trap (Tab/Shift+Tab cycles within the dialog)
+ *   - Escape key closes the dialog
+ *   - Focus is saved on open and restored on close
+ *   - role="dialog" with aria-modal and aria-labelledby
+ *
+ * Supports four visual types: info (blue), success (green), warning (yellow), danger (red).
+ * Can operate as a simple alert (just "Close") or a confirmation dialog (with "Confirm" + "Cancel").
+ */
 import React, { useEffect, useRef, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertTriangle, CheckCircle, Info } from "lucide-react";

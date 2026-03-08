@@ -1,3 +1,15 @@
+/**
+ * Home Page
+ * ─────────
+ * The main landing page of the Lost & Found portal. Displays:
+ *   - Welcome text explaining the purpose of the application
+ *   - Quick action buttons (View All Items, Report Item)
+ *   - A search bar that redirects to the Browse Items page with AI-powered search
+ *   - Sidebar cards: "Recent Finds" and "How to Claim" (styled like the MRHS website)
+ *   - Category quick links (Electronics, Clothing, Books, Personal Items, Other)
+ *
+ * Protected route — redirects to /login if the user is not authenticated.
+ */
 "use client";
 
 import { Footer } from "@/components/footer";
@@ -9,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Smartphone, Key, Book, Shirt } from "lucide-react";
 
-// Categories available for browsing, mapped to icons and gradient colors
+// Category definitions for the quick-link sidebar, each with an icon
 const CATEGORIES = [
   { name: "Electronics", icon: Smartphone },
   { name: "Clothing", icon: Shirt },

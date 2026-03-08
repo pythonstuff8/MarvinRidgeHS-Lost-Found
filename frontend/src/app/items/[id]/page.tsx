@@ -1,3 +1,20 @@
+/**
+ * Item Detail Page
+ * ────────────────
+ * Shows the full details of a single lost/found item (image, description,
+ * date, location, category badges).
+ *
+ * Key Features:
+ *   - HIGH-VALUE SECURITY: For high-value items ($50+), the image is blurred
+ *     and the location is hidden. Users must submit a verified claim to view.
+ *   - ONE-CLICK CLAIM (low-value): Low-value items can be claimed instantly
+ *     with a single button click — creates a notification and removes the item.
+ *   - VERIFIED CLAIM (high-value): High-value items redirect to a separate
+ *     claim form where users must prove ownership (location, description, proof).
+ *   - POTENTIAL MATCHES: Automatically finds items of the opposite type
+ *     (LOST ↔ FOUND) in the same category with keyword overlap.
+ *   - INQUIRY: Users can send a message to the admin about any item.
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";
@@ -25,6 +42,11 @@ export default function ItemDetail() {
         isOpen: false, title: "", message: "", type: "info"
     });
 
+    /**
+     * One-click claim for LOW-VALUE items. Creates a pickup notification
+     * for the user and removes the item from public listings immediately.
+     * High-value items use the separate /claim page with verification instead.
+     */
     const handleLowValueClaim = async () => {
         if (!user || !item) return;
         setClaiming(true);
@@ -71,7 +93,9 @@ export default function ItemDetail() {
         }
     }, [params.id]);
 
-    // Find potential matches of the opposite type
+    // MATCH FINDING: Search for items of the opposite type (LOST↔FOUND)
+    // in the same category. Scores matches by keyword overlap between
+    // titles and descriptions, and shows the top 3 results.
     useEffect(() => {
         if (!item) return;
         const itemsRef = ref(db, "items");

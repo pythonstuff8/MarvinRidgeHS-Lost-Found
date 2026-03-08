@@ -1,3 +1,20 @@
+/**
+ * Navbar Component
+ * ────────────────
+ * The site-wide navigation bar displayed at the top of every page.
+ *
+ * Features:
+ *   - School branding (logo, name, principal) matching the MRHS website style
+ *   - Desktop navigation strip with hover underline animations
+ *   - Mobile hamburger menu with slide-down overlay
+ *   - NOTIFICATION BELL with real-time unread count badge:
+ *     * Listens to Firebase /notifications for the current user
+ *     * Shows a dropdown with the 5 most recent notifications
+ *     * Auto-marks all as read when the dropdown is opened
+ *   - Role-aware: Shows "Admin Panel" vs "Dashboard" based on user role
+ *   - Accessibility: Escape key closes menus, click-outside closes dropdown,
+ *     proper aria-labels and aria-expanded attributes
+ */
 "use client";
 
 import Link from "next/link";
@@ -8,7 +25,7 @@ import { useAuth } from "@/context/auth-context";
 import { ref, onValue, update } from "firebase/database";
 import { db } from "@/lib/firebase";
 
-// Notification Data Structure
+// Notification data structure — matches the Firebase /notifications schema
 type Notification = {
     id: string;
     type: string;

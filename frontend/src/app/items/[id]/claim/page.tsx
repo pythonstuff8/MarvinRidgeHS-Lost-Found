@@ -1,3 +1,19 @@
+/**
+ * Claim Page (High-Value Items Only)
+ * ───────────────────────────────────
+ * This page is shown ONLY for high-value items ($50+). Low-value items
+ * use one-click claiming on the item detail page instead.
+ *
+ * The claimant must answer verification questions:
+ *   1. Where did you lose this item? (location — hidden from the listing)
+ *   2. Describe the item in detail (color, brand, distinguishing marks)
+ *   3. Additional proof (optional: receipts, serial numbers, etc.)
+ *   4. Proof images (optional: up to 3 photos of receipts, purchase screenshots)
+ *
+ * After submission, the claim goes to the admin dashboard for manual review.
+ * The admin sees a side-by-side comparison of the claimant's answers vs.
+ * the actual item data to make an informed approval/rejection decision.
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";

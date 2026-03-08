@@ -1,3 +1,11 @@
+/**
+ * Login Page
+ * ──────────
+ * Simple username/password login form. The username is mapped to
+ * "username@lf.app" internally for Firebase Auth (which requires emails).
+ * On success, the user is redirected to the home page.
+ * Links to the signup page for new users.
+ */
 "use client";
 
 import { useState } from "react";

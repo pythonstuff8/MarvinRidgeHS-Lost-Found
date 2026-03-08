@@ -1,3 +1,20 @@
+/**
+ * Browse Items Page
+ * ─────────────────
+ * Displays all approved lost & found items in a responsive grid.
+ *
+ * Key Features:
+ *   - AI-POWERED SEARCH: Queries the backend /api/ai-search endpoint which
+ *     uses GPT to correct typos and semantically match items. If the AI
+ *     corrects the query, a purple banner shows "Showing results for X
+ *     instead of Y" (like Google's "Did you mean...").
+ *   - REAL-TIME UPDATES: Uses Firebase onValue() listener so the item list
+ *     updates instantly when new items are approved by an admin.
+ *   - FILTERS: Users can filter by type (ALL / LOST / FOUND) and by category.
+ *   - URL PARAMS: Search queries and category filters are passed via URL
+ *     params so the home page search bar can link directly here.
+ *   - SKELETON LOADING: Shows animated placeholder cards while AI search runs.
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";
@@ -58,45 +75,74 @@ export default function ItemsPage() {
         }
     }, [searchParams]);
 
+    /**
+     * AI-Powered Search Function
+     * ───────────────────────────
+     * Sends the user's search query to the backend AI endpoint, which uses
+     * GPT to correct spelling mistakes and semantically match items.
+     * For example, typing "iphon" will be corrected to "iPhone" and will
+     * find "iPhone 15 with Cracked Screen."
+     *
+     * If the AI corrects the query, a banner is shown:
+     *   "Showing results for 'iPhone' instead of 'iphon'"
+     *
+     * Falls back to simple local text search if the backend is unreachable.
+     */
     const performAISearch = async (query: string) => {
+        // If search bar is empty, reset to showing all items
         if (!query.trim()) {
             setDisplayedItems(items);
             setCorrectedQuery("");
             return;
         }
 
+        // Show loading spinner while AI processes the search
         setIsAISearching(true);
         try {
+            // Send the search query to the backend AI search endpoint
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ai-search`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query })
+                body: JSON.stringify({ query }) // Send the raw user query
             });
 
             if (res.ok) {
+                // Parse the AI response: { results: Item[], corrected_query: string }
                 const data = await res.json();
+
                 if (data.results && data.results.length > 0) {
+                    // Update the displayed items with AI-matched results
                     setDisplayedItems(data.results);
+
+                    // Check if the AI corrected the user's spelling
+                    // (e.g., "airpods" → "AirPods", "calcluator" → "calculator")
                     if (data.corrected_query !== query) {
+                        // Store the corrected query to show the "Did you mean..." banner
                         setCorrectedQuery(data.corrected_query);
                     } else {
+                        // No correction needed — query was spelled correctly
                         setCorrectedQuery("");
                     }
                 } else {
-                    // Fallback to local search
+                    // AI returned no matches — fall back to simple text search
                     localSearch(query);
                 }
             } else {
+                // Backend returned an error — fall back to local search
                 localSearch(query);
             }
         } catch (e) {
+            // Network error or backend is down — fall back to local search
+            // so the user can still search even without AI
             console.error("AI Search error:", e);
             localSearch(query);
         } finally {
+            // Hide the loading spinner regardless of success or failure
             setIsAISearching(false);
         }
     };
 
+    /** Fallback: simple client-side text search when AI is unavailable */
     const localSearch = (query: string) => {
         const searchLower = query.toLowerCase();
         const results = items.filter((item) =>

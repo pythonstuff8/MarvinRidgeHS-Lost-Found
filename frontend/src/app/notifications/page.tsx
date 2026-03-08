@@ -1,3 +1,20 @@
+/**
+ * Notifications Page
+ * ──────────────────
+ * Displays all notifications for the logged-in user in a scrollable list.
+ * Notifications are created by admin actions and system events:
+ *
+ *   - ITEM_APPROVED / ITEM_REJECTED — Admin approved/rejected your item report
+ *   - CLAIM_APPROVED — Your claim was approved (includes QR code + pickup code)
+ *   - CLAIM_REJECTED — Your claim was not approved
+ *   - INQUIRY_REPLY — Admin replied to your inquiry message
+ *   - MATCH_FOUND — A potential match was found for your lost/found item
+ *
+ * When a claim is approved, the notification includes:
+ *   - A QR code (scannable by the admin at pickup)
+ *   - A 6-character alphanumeric pickup code (verbal alternative to QR)
+ *   - The pickup location
+ */
 "use client";
 
 import { Navbar } from "@/components/navbar";
@@ -8,6 +25,7 @@ import { db } from "@/lib/firebase";
 import { Bell, CheckCircle, XCircle, MessageSquare, MapPin, Key, Search } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
+// Notification data structure (stored in Firebase under /notifications)
 type Notification = {
     id: string;
     type: string;

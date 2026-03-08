@@ -1,8 +1,22 @@
+/**
+ * Firebase Client Configuration
+ * ─────────────────────────────
+ * Initializes the Firebase SDK for the frontend. All credentials are
+ * loaded from environment variables (NEXT_PUBLIC_FIREBASE_*) set in .env.local.
+ *
+ * Exports:
+ *   - db      → Firebase Realtime Database (items, claims, inquiries, notifications)
+ *   - auth    → Firebase Authentication (login, signup, session management)
+ *   - storage → Firebase Storage (not actively used — images go through Cloudinary)
+ *   - app     → The Firebase app instance
+ */
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
+// Firebase project configuration — values come from environment variables
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,10 +27,12 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
+// Prevent re-initialization during Next.js hot reloads
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getDatabase(app);
-const storage = getStorage(app);
-const auth = getAuth(app);
+
+// Initialize Firebase services used throughout the app
+const db = getDatabase(app);       // Realtime Database for all app data
+const storage = getStorage(app);   // File storage (backup — Cloudinary is primary)
+const auth = getAuth(app);         // Authentication for user login/signup
 
 export { app, db, storage, auth };

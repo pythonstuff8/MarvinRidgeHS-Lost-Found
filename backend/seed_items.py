@@ -1,6 +1,18 @@
 """
-Script to inject realistic lost and found items into Firebase database.
-Run this from the backend directory: python seed_items.py
+Database Seed Script
+────────────────────
+Populates the Firebase Realtime Database with realistic sample lost & found items
+for testing and demonstration purposes. Creates 24 items across three statuses:
+
+  - 15 APPROVED items (8 found + 7 lost) — visible to users in the browse page
+  - 6 PENDING items — appear in the admin dashboard for review
+  - 3 REJECTED items — stored but not displayed
+
+Items include realistic titles, descriptions, categories, locations around MRHS,
+and Unsplash stock images. Some items are flagged as high-value ($50+) to
+demonstrate the verified claim flow with blurred images and hidden locations.
+
+Run from the backend directory:  python seed_items.py
 """
 
 import firebase_admin
@@ -295,9 +307,10 @@ def generate_date():
 
 
 def seed_database():
+    """Main seeding function — clears existing items and inserts all sample data."""
     items_ref = db.reference('items')
 
-    # Clear existing items
+    # Clear existing items so we start fresh
     print("Clearing existing items...")
     items_ref.delete()
 

@@ -1,3 +1,11 @@
+/**
+ * Footer Component
+ * ────────────────
+ * Site-wide footer matching the official MRHS website style.
+ * Contains the school address, phone number, external resource links,
+ * social media icons, and a UCPS district blurb.
+ * All external links open in a new tab with proper rel="noopener noreferrer".
+ */
 import { Facebook, Instagram, Twitter, Youtube, Globe } from "lucide-react";
 import Link from "next/link";
 
