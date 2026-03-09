@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-firebase-admin
-python-multipart
-requests
-cloudinary
-openai
